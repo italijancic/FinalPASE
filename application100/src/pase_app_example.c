@@ -113,6 +113,10 @@ TASK(InitTask)
    /*Tarea Inicial*/
    bsp_init();
 
+   /*Test Funcionamiento UART*/
+   char str[] = "Hello world! This is EDU-CIAA-NXP! \n\r";
+   mcu_uart_write(str, strlen(str));
+
    /*Seteo alarma que activa la tarea que atiende al teclado*/
    SetRelAlarm(ActivateKeyboardTask, 10, KEYBOARD_TASK_TIME_MS);
 
