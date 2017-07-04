@@ -61,6 +61,9 @@
 extern void mcu_init(void)
 {
    mcu_gpio_init();
+   mcu_uart_init(115200);
+   /*Agregar la funcion de incializacion del PWM*/
+
 }
 
 /** @} doxygen end group definition */
