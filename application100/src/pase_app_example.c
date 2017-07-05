@@ -48,6 +48,7 @@
 #include "pase_app_example.h"
 #include "mcu.h"
 #include "bsp.h"
+
 /*==================[macros and definitions]=================================*/
 
 /*==================[internal data declaration]==============================*/
@@ -125,9 +126,9 @@ TASK(InitTask)
    SetRelAlarm(ActivateUserTask, 50, 50);
 
    /*Configuro el modulo de pwm*/
-   mcu_pwm_Config(MCU_GPIO_PIN_ID_84,1000);
+   mcu_pwm_Config(MCU_GPIO_PIN_ID_104,1000);
    /*Seteo el DutyCycle y DISPARO el pwm*/
-   mcu_pwm_SetDutyCycle(500);
+   mcu_pwm_SetDutyCycle(1);
 
    TerminateTask();
 }

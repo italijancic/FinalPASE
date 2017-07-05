@@ -53,9 +53,9 @@
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
-
+mcu_gpio_pinId_enum PinPWM;
 /*==================[external data definition]===============================*/
-
+extern uint32_t duty;
 /*==================[internal functions definition]==========================*/
 
 /*==================[external functions definition]==========================*/
@@ -66,11 +66,9 @@
  */
 extern void mcu_pwm_Init(void)
 {
-
 	/* Inicializo el TMR1 */
 	Chip_TIMER_Init(LPC_TIMER1);
 	Chip_TIMER_PrescaleSet(LPC_TIMER1,Chip_Clock_GetRate(CLK_MX_TIMER1)/1000000 - 1);
-
 }
 
 /** \brief
@@ -79,6 +77,11 @@ extern void mcu_pwm_Init(void)
  */
 extern void mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period)
 {
+	/**
+	 * Cargo el pin que voy a utilizar para hacer el pwm
+	 * */
+	PinPWM = pin;
+
 	/**
 	 * Match 0 - Define el período
 	 * */
@@ -99,16 +102,21 @@ extern void mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period)
 	Chip_TIMER_Reset(LPC_TIMER1);
 	/*Habilito el TMR1*/
 	Chip_TIMER_Enable(LPC_TIMER1);
-
 }
 
 /** \brief
  *
  *
  */
-extern void mcu_pwm_SetDutyCycle(uint32_t duty)
+extern void mcu_pwm_SetDutyCycle(uint32_t duty_cycle)
 {
-	Chip_TIMER_SetMatch(LPC_TIMER1, 1, duty);
+	/**
+	 * Match 1
+	 * Define el duty cycle del PWM
+	 * */
+	Chip_TIMER_SetMatch(LPC_TIMER1, 1, duty_cycle);
+
+	duty = duty_cycle;
 
 	/*Limpio los Match*/
 	Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
@@ -116,7 +124,6 @@ extern void mcu_pwm_SetDutyCycle(uint32_t duty)
 
 	/*Habilito la Interrrupcion*/
 	NVIC_EnableIRQ(TIMER1_IRQn);
-
 }
 
 /** \brief
@@ -129,14 +136,14 @@ ISR(TMR1_IRQHandler)
 	if (Chip_TIMER_MatchPending(LPC_TIMER1, 0))
 	{
 		Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
-	    bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_ON);
+	    mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_ON);
 	}
 
 	/*Si la Interrupcion fue en el Match 1*/
 	if (Chip_TIMER_MatchPending(LPC_TIMER1, 1))
 	{
 		Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
-		bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_OFF);
+		mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_OFF);
 	}
 }
 

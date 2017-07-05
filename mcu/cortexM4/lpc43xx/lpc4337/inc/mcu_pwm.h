@@ -54,12 +54,8 @@ extern "C" {
 #endif
 
 /*==================[macros]=================================================*/
-/**
- * \brief labels para definir maximos y minimos del pwm
- * */
 #define MAX_PWM_DUTY	1000
 #define MIN_PWM_DUTY	1
-
 /*==================[typedef]================================================*/
 
 /*==================[external data declaration]==============================*/
@@ -97,7 +93,7 @@ extern void mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period);
  **
  ** \return none
  **/
-extern void mcu_pwm_SetDutyCycle(uint32_t duty);
+extern void mcu_pwm_SetDutyCycle(uint32_t duty_cycle);
 
 /*==================[cplusplus]==============================================*/
 #ifdef __cplusplus
