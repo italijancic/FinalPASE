@@ -122,11 +122,36 @@ OSEK OSEK {
        	SCHEDULE = NON;
     }
     /********************************/
-   
+    
+    /********************************/
+	/*      TASK InputEvTask2       */
+	/********************************/
+    TASK InputEvTask1 {
+    	PRIORITY = 2;
+      	ACTIVATION = 1;
+      	STACK = 512;
+      	TYPE = BASIC;
+      	SCHEDULE = NON;
+   	}
+	/********************************/
+	
+	/********************************/
+	/*      TASK InputEvTask2       */
+	/********************************/
+   	TASK InputEvTask2 {
+      	PRIORITY = 2;
+      	ACTIVATION = 1;
+      	STACK = 512;
+      	TYPE = BASIC;
+      	SCHEDULE = NON;
+   	}
+   	/********************************/
+   	
     /**************************************************/
     /*End TAREAS*/
    
    
+    
     /**************************************************/
    	/*******************ALARMAS************************/
    	/**************************************************/
@@ -178,6 +203,7 @@ OSEK OSEK {
    	/**************************************************/
    	/*End ALARMAS*/
    	
+   	
    	/**************************************************/
    	/*******************COUNTER************************/
    	/**************************************************/
@@ -195,6 +221,74 @@ OSEK OSEK {
    	/********************************/
    	
    	/**************************************************/
-	/*End COUNTERS*/
+   	/*End COUNTERS*/
+   	
+   	/**************************************************/
+   	/****************INTERRUPCIONES********************/
+   	/**************************************************/
+   	
+   	/********************************/
+	/*            TIMER1            */
+	/********************************/
+   	ISR TMR1_IRQHandler{
+   		INTERRUPT = TIMER1;
+	  	CATEGORY = 2;
+	  	PRIORITY = 0;
+   	};
+   	/********************************/
+   	
+   	/********************************/
+	/*            GPIOs             */
+	/********************************
+   	ISR GPIOINTHandler0 {
+     	INTERRUPT = GPIO0;
+	  	CATEGORY = 2;
+	  	PRIORITY = 0;
+   	};
+   	
+   	ISR GPIOINTHandler1 {
+    	INTERRUPT = GPIO1;
+	  	CATEGORY = 2;
+	  	PRIORITY = 0;
+   	};
+   	
+   	ISR GPIOINTHandler2 {
+      	INTERRUPT = GPIO2;
+	  	CATEGORY = 2;
+	  	PRIORITY = 0;
+   	};
+
+   ISR GPIOINTHandler3 {
+      	INTERRUPT = GPIO3;
+	  	CATEGORY = 2;
+	  	PRIORITY = 0;
+   };
+   
+   ISR GPIOINTHandler4 {
+      	INTERRUPT = GPIO4;
+	  	CATEGORY = 2;
+	  	PRIORITY = 0;
+   	};
+   	
+   	ISR GPIOINTHandler5 {
+      	INTERRUPT = GPIO5;
+	  	CATEGORY = 2;
+	  	PRIORITY = 0;
+   	};
+   
+   	ISR GPIOINTHandler6 {
+      	INTERRUPT = GPIO6;
+	  	CATEGORY = 2;
+	  	PRIORITY = 0;
+   	};
+   	ISR GPIOINTHandler7 {
+      	INTERRUPT = GPIO7;
+	  	CATEGORY = 2;
+	  	PRIORITY = 0;
+   	};
+   	/********************************/
+   	
+   	/**************************************************/
+	/*End INTERRUPCIONES*/
 	
 };
