@@ -51,7 +51,7 @@
 
 /*==================[internal functions declaration]=========================*/
 
-/*==================[internal data definition]===============================*/
+	/*==================[internal data definition]===============================*/
 
 /*==================[external data definition]===============================*/
 
@@ -63,7 +63,7 @@ extern void mcu_init(void)
    mcu_gpio_init();
    mcu_uart_init(115200);
    /*Agregar la funcion de incializacion del PWM*/
-
+   mcu_pwm_Init();
 }
 
 /** @} doxygen end group definition */
