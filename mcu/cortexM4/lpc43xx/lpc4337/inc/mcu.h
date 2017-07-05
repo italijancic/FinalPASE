@@ -46,6 +46,7 @@
 
 /*==================[inclusions]=============================================*/
 #include "mcu_gpio.h"
+
 /*==================[cplusplus]==============================================*/
 #ifdef __cplusplus
 extern "C" {
@@ -59,7 +60,6 @@ extern "C" {
 
 /*==================[external functions declaration]=========================*/
 extern void mcu_init(void);
-
 /*==================[cplusplus]==============================================*/
 #ifdef __cplusplus
 }

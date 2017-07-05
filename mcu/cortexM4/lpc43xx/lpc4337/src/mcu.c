@@ -44,8 +44,6 @@
 
 /*==================[inclusions]=============================================*/
 #include "mcu.h"
-#include "mcu_uart.h"
-#include "mcu_pwm.h"
 /*==================[macros and definitions]=================================*/
 
 /*==================[internal data declaration]==============================*/
