@@ -126,9 +126,9 @@ TASK(InitTask)
    SetRelAlarm(ActivateUserTask, 50, 50);
 
    /*Configuro el modulo de pwm*/
-   mcu_pwm_Config(MCU_GPIO_PIN_ID_104,1000);
+   mcu_pwm_Config(MCU_GPIO_PIN_ID_104,2);
    /*Seteo el DutyCycle y DISPARO el pwm*/
-   mcu_pwm_SetDutyCycle(1);
+   mcu_pwm_SetDutyCycle(0);
 
    TerminateTask();
 }
@@ -150,8 +150,8 @@ TASK(UserTask)
    {
 	   bsp_ledAction(BOARD_LED_ID_0_R, BSP_LED_ACTION_TOGGLE);
 
-	   if(duty < 1000)
-		   duty += 100;
+	   if(duty < 100)
+		   duty += 10;
 	   else
 		   duty = 0;
 
@@ -165,10 +165,10 @@ TASK(UserTask)
    {
 	   bsp_ledAction(BOARD_LED_ID_0_G, BSP_LED_ACTION_TOGGLE);
 
-	   if(duty > 100)
-		   duty -= 100;
+	   if(duty >= 10)
+		   duty -= 10;
 	   else
-	       duty = 1000;
+	       duty = 100;
 
 	   mcu_pwm_SetDutyCycle(duty);
    }

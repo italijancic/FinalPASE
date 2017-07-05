@@ -55,9 +55,9 @@
 /*==================[internal data definition]===============================*/
 mcu_gpio_pinId_enum PinPWM;
 /*==================[external data definition]===============================*/
-extern uint32_t duty;
-/*==================[internal functions definition]==========================*/
 
+/*==================[internal functions definition]==========================*/
+uint32_t pwm_period;
 /*==================[external functions definition]==========================*/
 
 /** \brief
@@ -68,6 +68,10 @@ extern void mcu_pwm_Init(void)
 {
 	/* Inicializo el TMR1 */
 	Chip_TIMER_Init(LPC_TIMER1);
+	/**
+	 *  Seteo el prescaler del TIMER1
+	 *  Con esta configuracion el TIMER1 se incrementa cada 1uS
+	 *  */
 	Chip_TIMER_PrescaleSet(LPC_TIMER1,Chip_Clock_GetRate(CLK_MX_TIMER1)/1000000 - 1);
 }
 
@@ -77,6 +81,15 @@ extern void mcu_pwm_Init(void)
  */
 extern void mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period)
 {
+	/**
+	 * Paso el periodo a ms
+	 */
+	period = 1000*period;
+	pwm_period = period;
+
+	/* Pongo en bajo la salida PWM */
+	mcu_gpio_setOut(pin, BOARD_LED_STATE_OFF);
+
 	/**
 	 * Cargo el pin que voy a utilizar para hacer el pwm
 	 * */
@@ -96,7 +109,7 @@ extern void mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period)
 	Chip_TIMER_MatchEnableInt(LPC_TIMER1, 1);
 	Chip_TIMER_ResetOnMatchDisable(LPC_TIMER1, 1);
 	Chip_TIMER_StopOnMatchDisable(LPC_TIMER1, 1);
-	Chip_TIMER_SetMatch(LPC_TIMER1, 1, 100);		/*por defecto inicializo al 10%*/
+	Chip_TIMER_SetMatch(LPC_TIMER1, 1, 0);			/*por defecto inicializo al 0%*/
 
 	/*Reseteo el TMR1*/
 	Chip_TIMER_Reset(LPC_TIMER1);
@@ -108,22 +121,47 @@ extern void mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period)
  *
  *
  */
-extern void mcu_pwm_SetDutyCycle(uint32_t duty_cycle)
+extern void mcu_pwm_SetDutyCycle(uint32_t duty)
 {
+	/**
+	 * Declaracion de variables locales
+	 * */
+	float time_high = 0;	/* Tiempo en alto de la salida PWM */
+
+	/**
+	 * Calculo el Match del Tiempo en alto del PIN
+	 *
+	 * */
+	time_high = (float)pwm_period * ((float)duty / 100);
+
 	/**
 	 * Match 1
 	 * Define el duty cycle del PWM
 	 * */
-	Chip_TIMER_SetMatch(LPC_TIMER1, 1, duty_cycle);
-
-	duty = duty_cycle;
+	Chip_TIMER_SetMatch(LPC_TIMER1, 1, (uint32_t)time_high);
 
 	/*Limpio los Match*/
 	Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
 	Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
 
-	/*Habilito la Interrrupcion*/
-	NVIC_EnableIRQ(TIMER1_IRQn);
+	/**
+	 * Ver con carlos si no combiene aqui plantear un case
+	 * para ver si duty = 0, duty = 100 o el resto.
+	 * */
+	if(duty == 0)
+	{
+		/* Deshabilito la Interrupcion*/
+		NVIC_DisableIRQ(TIMER1_IRQn);
+		/* Pongo en bajo la salida PWM */
+		mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_OFF);
+	}
+	else
+	{
+		/* Habilito la Interrrupcion */
+		NVIC_EnableIRQ(TIMER1_IRQn);
+		/* Pongo en alto la salida PWM */
+		mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_ON);
+	}
 }
 
 /** \brief
@@ -133,17 +171,25 @@ extern void mcu_pwm_SetDutyCycle(uint32_t duty_cycle)
 ISR(TMR1_IRQHandler)
 {
 	/*Si la Interrupcion fue en el Match 0*/
-	if (Chip_TIMER_MatchPending(LPC_TIMER1, 0))
+	if (Chip_TIMER_MatchPending(LPC_TIMER1, 0) && !Chip_TIMER_MatchPending(LPC_TIMER1, 1))
 	{
 		Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
 	    mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_ON);
 	}
 
 	/*Si la Interrupcion fue en el Match 1*/
-	if (Chip_TIMER_MatchPending(LPC_TIMER1, 1))
+	if (Chip_TIMER_MatchPending(LPC_TIMER1, 1) && !Chip_TIMER_MatchPending(LPC_TIMER1, 0))
 	{
 		Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
 		mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_OFF);
+	}
+
+	/* Si se dan las dos interrupciones en simultaneo el duty = 100  */
+	if(Chip_TIMER_MatchPending(LPC_TIMER1, 0) && Chip_TIMER_MatchPending(LPC_TIMER1, 1))
+	{
+		Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
+		Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
+		mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_ON);
 	}
 }
 

@@ -80,7 +80,7 @@ extern void mcu_pwm_Init(void);
  * 		   contrario.
  *
  ** \param pin: Pin que voy a utilizar como salida PWM
- ** \param period: Periodo del PWM
+ ** \param period: Periodo del PWM en ms
  **
  ** \return none
  **/
@@ -89,11 +89,11 @@ extern void mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period);
 /** \brief Funcion para setear el duty cycle o
  * 		   ciclo de trabajo del PWM
  *
- ** \param none
+ ** \param duty porcentaje de tiempo en alto del pwm.
  **
  ** \return none
  **/
-extern void mcu_pwm_SetDutyCycle(uint32_t duty_cycle);
+extern void mcu_pwm_SetDutyCycle(uint32_t duty);
 
 /*==================[cplusplus]==============================================*/
 #ifdef __cplusplus
