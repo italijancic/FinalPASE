@@ -47,7 +47,6 @@
 #include "chip.h"
 #include "mcu_gpio.h"
 #include "stdint.h"
-#include "ciaaPOSIX_stdbool.h"
 #include <stdio.h>
 /*==================[cplusplus]==============================================*/
 #ifdef __cplusplus
@@ -74,9 +73,9 @@ extern "C" {
  *
  ** \param none
  **
- ** \return true or false
+ ** \return none
  **/
-extern bool mcu_pwm_Init(void);
+extern void mcu_pwm_Init(void);
 
 /** \brief Funcion de condiguración del
  * 		   mpodulo pwm.
@@ -87,18 +86,18 @@ extern bool mcu_pwm_Init(void);
  ** \param pin: Pin que voy a utilizar como salida PWM
  ** \param period: Periodo del PWM
  **
- ** \return true or false
+ ** \return none
  **/
-extern bool mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period);
+extern void mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period);
 
 /** \brief Funcion para setear el duty cycle o
  * 		   ciclo de trabajo del PWM
  *
  ** \param none
  **
- ** \return true or false
+ ** \return none
  **/
-extern bool mcu_pwm_SetDutyCycle(uint32_t duty);
+extern void mcu_pwm_SetDutyCycle(uint32_t duty);
 
 /*==================[cplusplus]==============================================*/
 #ifdef __cplusplus

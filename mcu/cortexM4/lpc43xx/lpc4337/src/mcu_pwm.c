@@ -47,7 +47,6 @@
 #include "mcu_gpio.h"
 #include "bsp.h"
 #include "stdint.h"
-#include "ciaaPOSIX_stdbool.h"
 #include <stdio.h>
 /*==================[macros and definitions]=================================*/
 
@@ -65,25 +64,21 @@
  *
  *
  */
-extern bool mcu_pwm_Init(void)
+extern void mcu_pwm_Init(void)
 {
-	bool ret=false;
 
 	/* Inicializo el TMR1 */
 	Chip_TIMER_Init(LPC_TIMER1);
 	Chip_TIMER_PrescaleSet(LPC_TIMER1,Chip_Clock_GetRate(CLK_MX_TIMER1)/1000000 - 1);
 
-	return ret;
 }
 
 /** \brief
  *
  *
  */
-extern bool mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period)
+extern void mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period)
 {
-	bool ret=false;
-
 	/**
 	 * Match 0 - Define el período
 	 * */
@@ -105,18 +100,14 @@ extern bool mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period)
 	/*Habilito el TMR1*/
 	Chip_TIMER_Enable(LPC_TIMER1);
 
-	return ret;
 }
 
 /** \brief
  *
  *
  */
-extern bool mcu_pwm_SetDutyCycle(uint32_t duty)
+extern void mcu_pwm_SetDutyCycle(uint32_t duty)
 {
-	bool ret=false;
-
-
 	Chip_TIMER_SetMatch(LPC_TIMER1, 1, duty);
 
 	/*Limpio los Match*/
@@ -126,7 +117,6 @@ extern bool mcu_pwm_SetDutyCycle(uint32_t duty)
 	/*Habilito la Interrrupcion*/
 	NVIC_EnableIRQ(TIMER1_IRQn);
 
-	return ret;
 }
 
 /** \brief
