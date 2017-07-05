@@ -55,8 +55,11 @@ extern "C" {
 #endif
 
 /*==================[macros]=================================================*/
-/** \brief comentario ... */
-
+/**
+ * \brief labels para definir maximos y minimos del pwm
+ * */
+#define MAX_PWM_DUTY	1000
+#define MIN_PWM_DUTY	1
 
 /*==================[typedef]================================================*/
 
