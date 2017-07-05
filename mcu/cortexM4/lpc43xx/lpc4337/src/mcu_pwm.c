@@ -42,11 +42,13 @@
 
 /*==================[inclusions]=============================================*/
 #include "mcu_pwm.h"
+#include "os.h"
 #include "chip.h"
 #include "mcu_gpio.h"
+#include "bsp.h"
 #include "stdint.h"
+#include "ciaaPOSIX_stdbool.h"
 #include <stdio.h>
-#include <stdbool.h>
 /*==================[macros and definitions]=================================*/
 
 /*==================[internal functions declaration]=========================*/
@@ -65,7 +67,13 @@
  */
 extern bool mcu_pwm_Init(void)
 {
+	bool ret=false;
 
+	/* Inicializo el TMR1 */
+	Chip_TIMER_Init(LPC_TIMER1);
+	Chip_TIMER_PrescaleSet(LPC_TIMER1,Chip_Clock_GetRate(CLK_MX_TIMER1)/1000000 - 1);
+
+	return ret;
 }
 
 /** \brief
@@ -74,7 +82,30 @@ extern bool mcu_pwm_Init(void)
  */
 extern bool mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period)
 {
+	bool ret=false;
 
+	/**
+	 * Match 0 - Define el período
+	 * */
+	Chip_TIMER_MatchEnableInt(LPC_TIMER1,0);		/*Habilito la Interrupcion por match del TMR1*/
+	Chip_TIMER_ResetOnMatchEnable(LPC_TIMER1,0);	/*Habilito el reset on match*/
+	Chip_TIMER_StopOnMatchDisable(LPC_TIMER1,0);	/*Deshabilito el Stop on match*/
+	Chip_TIMER_SetMatch(LPC_TIMER1,0,period);		/*Seteo el valor para el match 0*/
+
+	/**
+	* Match 1 - Define el duty cycle
+	* */
+	Chip_TIMER_MatchEnableInt(LPC_TIMER1, 1);
+	Chip_TIMER_ResetOnMatchDisable(LPC_TIMER1, 1);
+	Chip_TIMER_StopOnMatchDisable(LPC_TIMER1, 1);
+	Chip_TIMER_SetMatch(LPC_TIMER1, 1, 100);		/*por defecto inicializo al 10%*/
+
+	/*Reseteo el TMR1*/
+	Chip_TIMER_Reset(LPC_TIMER1);
+	/*Habilito el TMR1*/
+	Chip_TIMER_Enable(LPC_TIMER1);
+
+	return ret;
 }
 
 /** \brief
@@ -83,7 +114,40 @@ extern bool mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period)
  */
 extern bool mcu_pwm_SetDutyCycle(uint32_t duty)
 {
+	bool ret=false;
 
+
+	Chip_TIMER_SetMatch(LPC_TIMER1, 1, duty);
+
+	/*Limpio los Match*/
+	Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
+	Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
+
+	/*Habilito la Interrrupcion*/
+	NVIC_EnableIRQ(TIMER1_IRQn);
+
+	return ret;
+}
+
+/** \brief
+ *
+ *	Interrupcion por match en el TMR1
+ */
+ISR(TMR1_IRQHandler)
+{
+	/*Si la Interrupcion fue en el Match 0*/
+	if (Chip_TIMER_MatchPending(LPC_TIMER1, 0))
+	{
+		Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
+	    bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_ON);
+	}
+
+	/*Si la Interrupcion fue en el Match 1*/
+	if (Chip_TIMER_MatchPending(LPC_TIMER1, 1))
+	{
+		Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
+		bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_OFF);
+	}
 }
 
 /** @} doxygen end group definition */
