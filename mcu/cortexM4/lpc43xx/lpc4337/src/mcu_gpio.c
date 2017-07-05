@@ -43,11 +43,10 @@
  ** @{ */
 
 /*==================[inclusions]=============================================*/
-#include "mcu.h"
-#include "stdint.h"
+#include "mcu_gpio.h"
 #include "chip.h"
 #include "os.h"
-
+#include "stdint.h"
 /*==================[macros and definitions]=================================*/
 
 /** \brief cantidad de callback que se pueden registrar */
