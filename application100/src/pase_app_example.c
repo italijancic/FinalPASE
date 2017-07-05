@@ -47,11 +47,12 @@
 #include "os.h"
 #include "pase_app_example.h"
 #include "bsp.h"
+#include "mcu.h"
 
 /*==================[macros and definitions]=================================*/
 
 /*==================[internal data declaration]==============================*/
-
+int32_t duty=0;
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
@@ -61,6 +62,17 @@
 /*==================[internal functions definition]==========================*/
 
 /*==================[external functions definition]==========================*/
+
+static void eventInput1_callBack(mcu_gpio_pinId_enum id, mcu_gpio_eventTypeInput_enum evType)
+{
+   ActivateTask(InputEvTask1);
+}
+
+static void eventInput2_callBack(mcu_gpio_pinId_enum id, mcu_gpio_eventTypeInput_enum evType)
+{
+   ActivateTask(InputEvTask2);
+}
+
 /** \brief Main function
  *
  * This is the main entry point of the software.
@@ -117,36 +129,26 @@ TASK(InitTask)
    char str[] = "Hello world! This is EDU-CIAA-NXP! \n\r";
    mcu_uart_write(str, strlen(str));
 
+   mcu_gpio_setEventInput(MCU_GPIO_PIN_ID_38,
+		   	   	   	   	  MCU_GPIO_EVENT_TYPE_INPUT_FALLING_EDGE,
+						  eventInput1_callBack);
+
+   mcu_gpio_setEventInput(MCU_GPIO_PIN_ID_42,
+            			  MCU_GPIO_EVENT_TYPE_INPUT_RISING_EDGE,
+						  eventInput2_callBack);
+
    /*Seteo alarma que activa la tarea que atiende al teclado*/
    SetRelAlarm(ActivateKeyboardTask, 10, KEYBOARD_TASK_TIME_MS);
 
    /*Seteo alarma que activa la tarea definida por el usuario*/
    SetRelAlarm(ActivateUserTask, 50, 50);
 
+   /*Configuro el modulo de pwm*/
+   mcu_pwm_Config(MCU_GPIO_PIN_ID_84,1000);
+   /*Seteo el DutyCycle y DISPARO el pwm*/
+   mcu_pwm_SetDutyCycle(100);
+
    TerminateTask();
-}
-
-
-/** \brief LedON
- *
- * Tarea para encender un led con retardo
- * */
-TASK(LedON)
-{
-
-	bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_ON);
-    TerminateTask();
-}
-
-/** \brief LedOFF
- *
- *	Tarea para apagar un led con retardo
- * */
-TASK(LedOFF)
-{
-
-	bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_OFF);
-    TerminateTask();
 }
 
 /** \brief UserTask
@@ -162,16 +164,16 @@ TASK(UserTask)
    /* TECLA 1
     * Prendo el LED 1
     * */
-   if (key == BOARD_TEC_ID_1)
+   //if (key == BOARD_TEC_ID_1)
       //bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_ON);
-	   SetRelAlarm(ActivateLedON, 1000, 0);
+	  //SetRelAlarm(ActivateLedON, 1000, 0);
 
    /* TECLA 2
     * Apago LED 1
     * */
-   if (key == BOARD_TEC_ID_2)
+   //if (key == BOARD_TEC_ID_2)
       //bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_OFF);
-	   SetRelAlarm(ActivateLedOFF, 1000, 0);
+	  //SetRelAlarm(ActivateLedOFF, 1000, 0);
 
    /* TECLA 3
     * Toggle LED 2
@@ -212,6 +214,64 @@ TASK(KeyboardTask)
     bsp_keyboard_task();
 
     TerminateTask();
+}
+
+/** \brief LedON
+ *
+ * Tarea para encender un led con retardo
+ * */
+TASK(LedON)
+{
+
+	bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_ON);
+    TerminateTask();
+}
+
+/** \brief LedOFF
+ *
+ *	Tarea para apagar un led con retardo
+ * */
+TASK(LedOFF)
+{
+
+	bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_OFF);
+    TerminateTask();
+}
+
+/**
+ * \brief
+ *
+ * */
+TASK(InputEvTask1)
+{
+   bsp_ledAction(BOARD_LED_ID_0_R, BSP_LED_ACTION_TOGGLE);
+
+   if(duty < 1000)
+	   duty += 100;
+   else
+	   duty = 0;
+
+   mcu_pwm_SetDutyCycle(duty);
+
+   TerminateTask();
+}
+
+/**
+ * \brief
+ *
+ * */
+TASK(InputEvTask2)
+{
+   bsp_ledAction(BOARD_LED_ID_0_B, BSP_LED_ACTION_TOGGLE);
+
+   if(duty > 100)
+	   duty -= 100;
+   else
+   	   duty = 1000;
+
+   mcu_pwm_SetDutyCycle(duty);
+
+   TerminateTask();
 }
 
 /** @} doxygen end group definition */
