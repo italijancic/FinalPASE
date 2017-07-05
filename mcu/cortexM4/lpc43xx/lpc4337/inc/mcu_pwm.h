@@ -47,8 +47,8 @@
 #include "chip.h"
 #include "mcu_gpio.h"
 #include "stdint.h"
+#include "ciaaPOSIX_stdbool.h"
 #include <stdio.h>
-#include <stdbool.h>
 /*==================[cplusplus]==============================================*/
 #ifdef __cplusplus
 extern "C" {
