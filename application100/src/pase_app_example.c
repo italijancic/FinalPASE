@@ -46,11 +46,8 @@
 /*==================[inclusions]=============================================*/
 #include "os.h"
 #include "pase_app_example.h"
-#include "bsp.h"
 #include "mcu.h"
-#include "mcu_gpio.h"
-
-
+#include "bsp.h"
 /*==================[macros and definitions]=================================*/
 
 /*==================[internal data declaration]==============================*/
@@ -119,7 +116,7 @@ TASK(InitTask)
 
    /*Test Funcionamiento UART*/
    char str[] = "Hello world! This is EDU-CIAA-NXP! \n\r";
-   mcu_uart_write(str, strlen(str));
+   mcu_uart_write((uint8_t)str, strlen(str));
 
    /*Seteo alarma que activa la tarea que atiende al teclado*/
    SetRelAlarm(ActivateKeyboardTask, 10, KEYBOARD_TASK_TIME_MS);
@@ -165,7 +162,7 @@ TASK(UserTask)
     * */
    if (key == BOARD_TEC_ID_2)
    {
-	   bsp_ledAction(BOARD_LED_ID_0_B, BSP_LED_ACTION_TOGGLE);
+	   bsp_ledAction(BOARD_LED_ID_0_G, BSP_LED_ACTION_TOGGLE);
 
 	   if(duty > 100)
 		   duty -= 100;
@@ -215,29 +212,6 @@ TASK(KeyboardTask)
 
     TerminateTask();
 }
-
-/** \brief LedON
- *
- * Tarea para encender un led con retardo
- * */
-TASK(LedON)
-{
-
-	bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_ON);
-    TerminateTask();
-}
-
-/** \brief LedOFF
- *
- *	Tarea para apagar un led con retardo
- * */
-TASK(LedOFF)
-{
-
-	bsp_ledAction(BOARD_LED_ID_1, BSP_LED_ACTION_OFF);
-    TerminateTask();
-}
-
 
 /** @} doxygen end group definition */
 /** @} doxygen end group definition */
