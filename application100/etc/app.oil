@@ -76,10 +76,22 @@ OSEK OSEK {
    	/********************************/ 
 
 	/********************************/
+	/*    TASK SecuenciaTask        */
+	/********************************/ 
+   	TASK SecuenciaTask {
+    	PRIORITY = 1;
+      	ACTIVATION = 1;
+      	STACK = 512;
+      	TYPE = BASIC;
+      	SCHEDULE = NON;
+   	}
+	/********************************/
+	
+	/********************************/
 	/*        TASK UserTask         */
 	/********************************/ 
    	TASK UserTask {
-    	PRIORITY = 1;
+    	PRIORITY = 2;
       	ACTIVATION = 1;
       	STACK = 512;
       	TYPE = BASIC;
@@ -91,7 +103,7 @@ OSEK OSEK {
 	/*     TASK KeyboardTask        */
 	/********************************/ 
     TASK KeyboardTask {
-    	PRIORITY = 2;
+    	PRIORITY = 3;
        	ACTIVATION = 1;
        	STACK = 512;
        	TYPE = BASIC;
@@ -108,6 +120,17 @@ OSEK OSEK {
    	/*******************ALARMAS************************/
    	/**************************************************/
    	
+   	/********************************/
+	/* ALARM ActivateSecuenciaTask  */
+	/********************************/
+   	ALARM ActivateSecuenciaTask {
+    	COUNTER = HardwareCounter;
+      	ACTION = ACTIVATETASK {
+        	TASK = SecuenciaTask;
+      	}
+   	}
+	/********************************/
+	
    	/********************************/
 	/*  ALARM ActivateKeyboardTask  */
 	/********************************/
