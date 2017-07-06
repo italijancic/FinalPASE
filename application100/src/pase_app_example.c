@@ -116,10 +116,6 @@ TASK(InitTask)
    /*Tarea Inicial*/
    bsp_init();
 
-   /*Test Funcionamiento UART*/
-   char str[] = "Hello world! This is EDU-CIAA-NXP! \n\r";
-   mcu_uart_write(str, strlen(str));
-
    /*Seteo alarma que activa la tarea que atiende al teclado*/
    SetRelAlarm(ActivateKeyboardTask, 10, KEYBOARD_TASK_TIME_MS);
 
@@ -144,8 +140,8 @@ TASK(SecuenciaTask)
 	 * Declaracion de variables locales
 	 * */
 	static uint32_t duty = 0;
-
-	//bsp_ledAction(BOARD_LED_ID_2, BSP_LED_ACTION_TOGGLE);
+	static unsigned long timestamp = 0;
+	static char str[40];
 
 	/** \brief State Machine for led actions
 	 * Máquina de estado para generar la secuencia requerida
@@ -153,6 +149,14 @@ TASK(SecuenciaTask)
 	switch(state_sec)
 	{
 		case 0:
+			if(duty == 0)
+			{
+				/* Obtengo el timestamp */
+
+				sprintf(str,"TIMESTAMP: Encendiendo Led Rojo \n\r");
+				/* Imprimo msj por la UART */
+				mcu_uart_write(str, strlen(str));
+			}
 			if(duty < 100)
 			{
 				duty += 1;
@@ -161,8 +165,11 @@ TASK(SecuenciaTask)
 			/* Llego a la máxima intensidad */
 			else
 			{
-				/* Imprimo msj por la UART */
+				/* Obtengo el timestamp */
 
+				sprintf(str,"TIMESTAMP: Intencidad Máxima Led Rojo \n\r");
+				/* Imprimo msj por la UART */
+				mcu_uart_write(str, strlen(str));
 				/* Incremento el estado en la SM */
 				state_sec = 1;
 			}
@@ -278,59 +285,40 @@ TASK(SecuenciaTask)
  */
 TASK(UserTask)
 {
-   int32_t key;
+	/**
+	 * Declaracion de variables locales
+	 * */
+	int32_t key;
+    static char str[40];
 
-   key = bsp_keyboardGet();
+    /**
+     * Obtengo la ultima tecla presionada
+     * */
+    key = bsp_keyboardGet();
 
-   /* TECLA 1
-    * Da inicio a la secuencia de encendido de los
-    * LED RGB
-    * */
-   if (key == BOARD_TEC_ID_1)
-   {
-	   SetRelAlarm(ActivateSecuenciaTask, 0, 20);
-   }
+    /* TECLA 1
+     * Da inicio a la secuencia de encendido de los
+     * LED RGB
+     * */
+    if (key == BOARD_TEC_ID_1)
+    {
+    	SetRelAlarm(ActivateSecuenciaTask, 0, 20);
+    	sprintf(str,"TIMESTAMP: Inicio Secuencia \n\r");
+    	/* Imprimo msj por la UART */
+    	mcu_uart_write(str, strlen(str));
+    }
 
-   /* TECLA 2
-    * Da fin a la secuencia de encendido de los
-    * LE RGB
-    * */
-   if (key == BOARD_TEC_ID_2)
-   {
+    /* TECLA 2
+     * Da fin a la secuencia de encendido de los
+     * LE RGB
+     * */
+    if (key == BOARD_TEC_ID_2)
+    {
 
-   }
+    }
 
-   /* TECLA 3
-    * Aumento intensidad LED
-    * */
-   if (key == BOARD_TEC_ID_3)
-   {
-	   bsp_ledAction(BOARD_LED_ID_3, BSP_LED_ACTION_TOGGLE);
-
-	   if(duty < 100)
-		   duty += 10;
-	   else
-		   duty = 0;
-
-	   mcu_pwm_SetDutyCycle(duty);
-   }
-
-   /* TECLA 4
-    * Disminuye intensidad LED
-    * */
-   if (key == BOARD_TEC_ID_4)
-   {
-	   bsp_ledAction(BOARD_LED_ID_3, BSP_LED_ACTION_TOGGLE);
-
-	   if(duty >= 10)
-		   duty -= 10;
-	   else
-		   duty = 100;
-
-	   mcu_pwm_SetDutyCycle(duty);
-   }
-
-   TerminateTask();
+    /* Fin tarea */
+    TerminateTask();
 }
 
 /** \brief KeyboardTask
@@ -343,6 +331,7 @@ TASK(KeyboardTask)
 
     bsp_keyboard_task();
 
+    /* Fin tarea */
     TerminateTask();
 }
 
