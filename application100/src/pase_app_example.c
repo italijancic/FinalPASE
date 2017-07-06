@@ -53,6 +53,7 @@
 
 /*==================[internal data declaration]==============================*/
 int32_t duty=0;
+uint8_t state_sec=0;
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
@@ -117,7 +118,7 @@ TASK(InitTask)
 
    /*Test Funcionamiento UART*/
    char str[] = "Hello world! This is EDU-CIAA-NXP! \n\r";
-   mcu_uart_write((uint8_t)str, strlen(str));
+   mcu_uart_write(str, strlen(str));
 
    /*Seteo alarma que activa la tarea que atiende al teclado*/
    SetRelAlarm(ActivateKeyboardTask, 10, KEYBOARD_TASK_TIME_MS);
@@ -126,16 +127,154 @@ TASK(InitTask)
    SetRelAlarm(ActivateUserTask, 50, 50);
 
    /*Configuro el modulo de pwm*/
-   mcu_pwm_Config(MCU_GPIO_PIN_ID_104,2);
-   /*Seteo el DutyCycle y DISPARO el pwm*/
+   mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
+   /*Seteo el DutyCycle del PWM en 0% */
    mcu_pwm_SetDutyCycle(0);
 
    TerminateTask();
 }
 
+/** \brief SecuenciaTask
+ * Tarea para hacerla secuencia de encendido
+ * y apagado de los LEDs
+ * */
+TASK(SecuenciaTask)
+{
+	/**
+	 * Declaracion de variables locales
+	 * */
+	static uint32_t duty = 0;
+
+	//bsp_ledAction(BOARD_LED_ID_2, BSP_LED_ACTION_TOGGLE);
+
+	/** \brief State Machine for led actions
+	 * Máquina de estado para generar la secuencia requerida
+	 * */
+	switch(state_sec)
+	{
+		case 0:
+			if(duty < 100)
+			{
+				duty += 1;
+				mcu_pwm_SetDutyCycle(duty);
+			}
+			/* Llego a la máxima intensidad */
+			else
+			{
+				/* Imprimo msj por la UART */
+
+				/* Incremento el estado en la SM */
+				state_sec = 1;
+			}
+			break;
+
+		case 1:
+			if(duty >= 1)
+			{
+				duty -= 1;
+				mcu_pwm_SetDutyCycle(duty);
+			}
+			/* Llego a la minima intensidad */
+			else
+			{
+				/* Modifico el el pin del PWM */
+				mcu_pwm_Config(MCU_GPIO_PIN_ID_81,2);
+				/*Seteo el DutyCycle del PWM en 0% */
+				mcu_pwm_SetDutyCycle(duty);
+
+				/* Imprimo msj por la UART */
+
+				/* Incremento el estado en la SM */
+				state_sec = 2;
+			}
+			break;
+
+		case 2:
+			if(duty < 100)
+			{
+				duty += 1;
+				mcu_pwm_SetDutyCycle(duty);
+			}
+			/* Llego a la máxima intensidad */
+			else
+			{
+				/* Imprimo msj por la UART */
+
+				/* Incremento el estado en la SM */
+				state_sec = 3;
+			}
+			break;
+
+		case 3:
+			if(duty >= 1)
+			{
+				duty -= 1;
+				mcu_pwm_SetDutyCycle(duty);
+			}
+			/* Llego a la minima intensidad */
+			else
+			{
+				/* Modifico el el pin del PWM */
+				mcu_pwm_Config(MCU_GPIO_PIN_ID_84,2);
+				/*Seteo el DutyCycle del PWM en 0% */
+				mcu_pwm_SetDutyCycle(duty);
+
+				/* Imprimo msj por la UART */
+
+				/* Incremento el estado en la SM */
+				state_sec = 4;
+			}
+			break;
+
+		case 4:
+			if(duty < 100)
+			{
+				duty += 1;
+				mcu_pwm_SetDutyCycle(duty);
+			}
+			/* Llego a la máxima intensidad */
+			else
+			{
+				/* Imprimo msj por la UART */
+
+				/* Incremento el estado en la SM */
+				state_sec = 5;
+			}
+			break;
+
+		case 5:
+			if(duty >= 1)
+			{
+				duty -= 1;
+				mcu_pwm_SetDutyCycle(duty);
+			}
+			/* Llego a la minima intensidad */
+			else
+			{
+				/* Modifico el el pin del PWM */
+				mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
+				/*Seteo el DutyCycle del PWM en 0% */
+				mcu_pwm_SetDutyCycle(duty);
+
+				/* Imprimo msj por la UART */
+
+				/* Incremento el estado en la SM */
+				state_sec = 0;
+			}
+			break;
+
+		default:
+			/* None */
+			break;
+	}
+
+	/* Finalizo la tarea */
+	TerminateTask();
+}
+
 /** \brief UserTask
- *
- *
+ *	Tarea  que ejecuto cada 50ms para procesar la ultima
+ *	tecla  precionada
  */
 TASK(UserTask)
 {
@@ -144,11 +283,29 @@ TASK(UserTask)
    key = bsp_keyboardGet();
 
    /* TECLA 1
-    * Aumento intensidad LED
+    * Da inicio a la secuencia de encendido de los
+    * LED RGB
     * */
    if (key == BOARD_TEC_ID_1)
    {
-	   bsp_ledAction(BOARD_LED_ID_0_R, BSP_LED_ACTION_TOGGLE);
+	   SetRelAlarm(ActivateSecuenciaTask, 0, 20);
+   }
+
+   /* TECLA 2
+    * Da fin a la secuencia de encendido de los
+    * LE RGB
+    * */
+   if (key == BOARD_TEC_ID_2)
+   {
+
+   }
+
+   /* TECLA 3
+    * Aumento intensidad LED
+    * */
+   if (key == BOARD_TEC_ID_3)
+   {
+	   bsp_ledAction(BOARD_LED_ID_3, BSP_LED_ACTION_TOGGLE);
 
 	   if(duty < 100)
 		   duty += 10;
@@ -158,45 +315,20 @@ TASK(UserTask)
 	   mcu_pwm_SetDutyCycle(duty);
    }
 
-   /* TECLA 2
+   /* TECLA 4
     * Disminuye intensidad LED
     * */
-   if (key == BOARD_TEC_ID_2)
+   if (key == BOARD_TEC_ID_4)
    {
-	   bsp_ledAction(BOARD_LED_ID_0_G, BSP_LED_ACTION_TOGGLE);
+	   bsp_ledAction(BOARD_LED_ID_3, BSP_LED_ACTION_TOGGLE);
 
 	   if(duty >= 10)
 		   duty -= 10;
 	   else
-	       duty = 100;
+		   duty = 100;
 
 	   mcu_pwm_SetDutyCycle(duty);
    }
-
-   /* TECLA 3
-    * Toggle LED 2
-    * */
-   if (key == BOARD_TEC_ID_3)
-   {
-      static char state = 0;
-
-      state = 1-state;
-
-      if (state)
-         bsp_ledAction(BOARD_LED_ID_2, BSP_LED_ACTION_ON);
-      else
-         bsp_ledAction(BOARD_LED_ID_2, BSP_LED_ACTION_OFF);
-   }
-
-   /* TECLA 4
-    * Si presiono la tecla por mas de 2seg prendo el led 3
-    * por el contrario, si dejo de apretarla se apaga
-    * */
-   if (bsp_keyboardGetPressed(BOARD_TEC_ID_4, 10))
-      bsp_ledAction(BOARD_LED_ID_3, BSP_LED_ACTION_ON);
-   else
-      bsp_ledAction(BOARD_LED_ID_3, BSP_LED_ACTION_OFF);
-
 
    TerminateTask();
 }
@@ -204,7 +336,7 @@ TASK(UserTask)
 /** \brief KeyboardTask
  *
  * Tarea periodica que se ejecuta cada 2ms
- * y se encarga de las tareas referidas al teclado
+ * y se encarga de hacer el poolin de las teclas
  * */
 TASK(KeyboardTask)
 {
