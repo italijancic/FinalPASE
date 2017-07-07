@@ -46,6 +46,8 @@
 #include "board.h"
 #include "mcu.h"
 #include "stdint.h"
+#include "mcu_uart.h"
+#include "mcu_pwm.h"
 
 /*==================[macros and definitions]=================================*/
 
@@ -84,6 +86,11 @@ static const int8_t totalSwitches = sizeof(switchMap) / sizeof(switchMap[0]);
 extern void board_init(void)
 {
    int8_t i;
+
+   mcu_gpio_init();
+   mcu_uart_init(115200);
+   /*Agregar la funcion de incializacion del PWM*/
+   mcu_pwm_Init();
 
    for (i = 0 ; i < totalLeds ; i++)
    {
