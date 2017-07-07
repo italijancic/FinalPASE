@@ -44,6 +44,7 @@
 
 /*==================[inclusions]=============================================*/
 #include "mcu.h"
+
 /*==================[macros and definitions]=================================*/
 
 /*==================[internal data declaration]==============================*/
@@ -59,10 +60,7 @@
 /*==================[external functions definition]==========================*/
 extern void mcu_init(void)
 {
-   mcu_gpio_init();
-   mcu_uart_init(115200);
-   /*Agregar la funcion de incializacion del PWM*/
-   mcu_pwm_Init();
+
 }
 
 /** @} doxygen end group definition */

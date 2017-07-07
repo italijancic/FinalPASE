@@ -45,7 +45,6 @@
 #include "os.h"
 #include "chip.h"
 #include "mcu_gpio.h"
-#include "bsp.h"
 #include "stdint.h"
 #include <stdio.h>
 /*==================[macros and definitions]=================================*/
@@ -88,7 +87,7 @@ extern void mcu_pwm_Config(mcu_gpio_pinId_enum pin, uint32_t period)
 	pwm_period = period;
 
 	/* Pongo en bajo la salida PWM */
-	mcu_gpio_setOut(pin, BOARD_LED_STATE_OFF);
+	mcu_gpio_setOut(pin, false);
 
 	/**
 	 * Cargo el pin que voy a utilizar para hacer el pwm
@@ -153,14 +152,14 @@ extern void mcu_pwm_SetDutyCycle(uint32_t duty)
 		/* Deshabilito la Interrupcion*/
 		NVIC_DisableIRQ(TIMER1_IRQn);
 		/* Pongo en bajo la salida PWM */
-		mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_OFF);
+		mcu_gpio_setOut(PinPWM, false);
 	}
 	else
 	{
 		/* Habilito la Interrrupcion */
 		NVIC_EnableIRQ(TIMER1_IRQn);
 		/* Pongo en alto la salida PWM */
-		mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_ON);
+		mcu_gpio_setOut(PinPWM, true);
 	}
 }
 
@@ -174,14 +173,14 @@ ISR(TMR1_IRQHandler)
 	if (Chip_TIMER_MatchPending(LPC_TIMER1, 0) && !Chip_TIMER_MatchPending(LPC_TIMER1, 1))
 	{
 		Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
-	    mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_ON);
+	    mcu_gpio_setOut(PinPWM, true);
 	}
 
 	/*Si la Interrupcion fue en el Match 1*/
 	if (Chip_TIMER_MatchPending(LPC_TIMER1, 1) && !Chip_TIMER_MatchPending(LPC_TIMER1, 0))
 	{
 		Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
-		mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_OFF);
+		mcu_gpio_setOut(PinPWM, false);
 	}
 
 	/* Si se dan las dos interrupciones en simultaneo el duty = 100  */
@@ -189,7 +188,7 @@ ISR(TMR1_IRQHandler)
 	{
 		Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
 		Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
-		mcu_gpio_setOut(PinPWM, BOARD_LED_STATE_ON);
+		mcu_gpio_setOut(PinPWM, true);
 	}
 }
 
