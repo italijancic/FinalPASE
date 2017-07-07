@@ -321,11 +321,11 @@ TASK(UserTask)
     	if(cont_tec_1 == 0)
     	{
     		SetRelAlarm(ActivateSecuenciaTask, 0, 20);
-    		//SetRelAlarm(RunCallBack2ms,0 , 20);
 
     		/* Imprimo msj por la UART */
     		sprintf(str,"TIMESTAMP: Inicio Secuencia \n\r");
     		mcu_uart_write(str, strlen(str));
+
     		cont_tec_1 = 1;
     	}
     	else
@@ -333,7 +333,16 @@ TASK(UserTask)
     		CancelAlarm(ActivateSecuenciaTask);
     		/* Reinicializo la  maquina de estado de secuencia led */
     		state_sec = 0;
+    		/* Modifico el el pin del PWM */
     		duty = 0;
+    		mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
+    		mcu_pwm_SetDutyCycle(0);
+    		cont_tec_2 = 0;
+    		bsp_ledAction(BOARD_LED_ID_0_R,BOARD_LED_STATE_OFF);
+    		bsp_ledAction(BOARD_LED_ID_0_G,BOARD_LED_STATE_OFF);
+    		bsp_ledAction(BOARD_LED_ID_0_B,BOARD_LED_STATE_OFF);
+
+
     	}
     }
 
@@ -343,7 +352,7 @@ TASK(UserTask)
      * */
     if (key == BOARD_TEC_ID_2)
     {
-    	if(cont_tec_2 == 0 && cont_tec_1 == 0)
+    	if(cont_tec_2 == 0)
     	{
     		SetRelAlarm(ActivateSecuenciaTask, 0, 20);
 
@@ -357,7 +366,6 @@ TASK(UserTask)
     	 {
     		 CancelAlarm(ActivateSecuenciaTask);
     		 cont_tec_2 = 0;
-    		 cont_tec_1 = 0;
     	}
     }
 
