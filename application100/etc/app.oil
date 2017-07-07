@@ -131,6 +131,17 @@ OSEK OSEK {
    	}
 	/********************************/
 	
+	/********************************/
+	/*     ALARM RunCallBack2ms    */
+	/********************************/
+	ALARM RunCallBack2ms {
+    	COUNTER = HardwareCounter;
+      	ACTION = ALARMCALLBACK {
+         	ALARMCALLBACKNAME = CallBack2ms;
+      	};
+   	}
+	//*******************************
+	
    	/********************************/
 	/*  ALARM ActivateKeyboardTask  */
 	/********************************/

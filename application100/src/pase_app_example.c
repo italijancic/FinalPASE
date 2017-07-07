@@ -130,6 +130,15 @@ TASK(InitTask)
    TerminateTask();
 }
 
+/**
+ * \brief ALARMCALLBACK
+ *
+ * */
+ALARMCALLBACK(CallBack2ms)
+{
+	ActivateTask(SecuenciaTask);
+}
+
 /** \brief SecuenciaTask
  * Tarea para hacerla secuencia de encendido
  * y apagado de los LEDs
@@ -279,6 +288,7 @@ TASK(SecuenciaTask)
 	TerminateTask();
 }
 
+
 /** \brief UserTask
  *	Tarea  que ejecuto cada 50ms para procesar la ultima
  *	tecla  precionada
@@ -289,6 +299,9 @@ TASK(UserTask)
 	 * Declaracion de variables locales
 	 * */
 	int32_t key;
+	TaskStateType state;
+	static uint8_t cont_tec_1 = 0;
+	static uint8_t cont_tec_2 = 0;
     static char str[40];
 
     /**
@@ -297,24 +310,55 @@ TASK(UserTask)
     key = bsp_keyboardGet();
 
     /* TECLA 1
-     * Da inicio a la secuencia de encendido de los
+     * Da inicio y la finaliza
      * LED RGB
      * */
     if (key == BOARD_TEC_ID_1)
     {
-    	SetRelAlarm(ActivateSecuenciaTask, 0, 20);
-    	sprintf(str,"TIMESTAMP: Inicio Secuencia \n\r");
-    	/* Imprimo msj por la UART */
-    	mcu_uart_write(str, strlen(str));
+    	/* Obtengo el Estado de la Tare de Secuencia de LEDs */
+    	//GetTaskState(SecuenciaTask, &state);
+
+    	if(cont_tec_1 == 0)
+    	{
+    		SetRelAlarm(ActivateSecuenciaTask, 0, 20);
+    		//SetRelAlarm(RunCallBack2ms,0 , 20);
+
+    		/* Imprimo msj por la UART */
+    		sprintf(str,"TIMESTAMP: Inicio Secuencia \n\r");
+    		mcu_uart_write(str, strlen(str));
+    		cont_tec_1 = 1;
+    	}
+    	else
+    	{
+    		CancelAlarm(ActivateSecuenciaTask);
+    		/* Reinicializo la  maquina de estado de secuencia led */
+    		state_sec = 0;
+    		duty = 0;
+    	}
     }
 
     /* TECLA 2
-     * Da fin a la secuencia de encendido de los
+     * Pausa o reinicia la secuencia de los LEDs
      * LE RGB
      * */
     if (key == BOARD_TEC_ID_2)
     {
+    	if(cont_tec_2 == 0 && cont_tec_1 == 0)
+    	{
+    		SetRelAlarm(ActivateSecuenciaTask, 0, 20);
 
+    		/* Imprimo msj por la UART */
+    	    sprintf(str,"TIMESTAMP: Inicio Secuencia \n\r");
+    	    mcu_uart_write(str, strlen(str));
+
+    	    cont_tec_2 = 1;
+    	 }
+    	 else
+    	 {
+    		 CancelAlarm(ActivateSecuenciaTask);
+    		 cont_tec_2 = 0;
+    		 cont_tec_1 = 0;
+    	}
     }
 
     /* Fin tarea */
