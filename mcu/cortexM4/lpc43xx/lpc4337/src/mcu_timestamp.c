@@ -1,7 +1,5 @@
-/* Copyright 2017, Gustavo Muro
+/* Copyright 2014, Your Name <youremail@domain.com>
  * All rights reserved.
- *
- * This file is part of CIAA Firmware.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,100 +29,90 @@
  *
  */
 
-/** \brief source para MCU
+/** \brief Short description of this file
  **
- ** archivo de inicilización del microcontrolador
+ ** Long description of this file
  **
  **/
 
-/** \addtogroup PASE_APP_EXAMPLE
+/** \addtogroup project
  ** @{ */
-/** \addtogroup MCU
+/** \addtogroup module
  ** @{ */
 
 /*==================[inclusions]=============================================*/
-#include "board.h"
-#include "mcu.h"
-#include "stdint.h"
-#include "mcu_uart.h"
-#include "mcu_pwm.h"
 #include "mcu_timestamp.h"
+#include "os.h"
+#include "chip.h"
+#include "stdint.h"
+
 
 /*==================[macros and definitions]=================================*/
-
-/*==================[internal data declaration]==============================*/
-static const mcu_gpio_pinId_enum ledMap[] =
-{
-   MCU_GPIO_PIN_ID_75,
-   MCU_GPIO_PIN_ID_81,
-   MCU_GPIO_PIN_ID_84,
-   MCU_GPIO_PIN_ID_104,
-   MCU_GPIO_PIN_ID_105,
-   MCU_GPIO_PIN_ID_106,
-};
-
-static const mcu_gpio_pinId_enum switchMap[] =
-{
-   MCU_GPIO_PIN_ID_38,
-   MCU_GPIO_PIN_ID_42,
-   MCU_GPIO_PIN_ID_43,
-   MCU_GPIO_PIN_ID_49,
-};
-
-static const int8_t totalLeds = sizeof(ledMap) / sizeof(ledMap[0]);
-static const int8_t totalSwitches = sizeof(switchMap) / sizeof(switchMap[0]);
 
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
-
+int mseg;
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
 
 /*==================[external functions definition]==========================*/
 
-extern void board_init(void)
+/** \brief
+ *
+ *
+ */
+extern void mcu_timestamp_Init(void)
 {
-   int8_t i;
+	/* Inicializo el TMR1 */
+	Chip_TIMER_Init(LPC_TIMER2);
 
-   mcu_gpio_init();
+	/**
+	 *  Seteo el prescaler del TIMER2
+	 *  Con esta configuracion el TIMER2 se incrementa cada 1uS
+	 *  */
+	Chip_TIMER_PrescaleSet(LPC_TIMER2,Chip_Clock_GetRate(CLK_MX_TIMER2)/1000000 - 1);
 
-   mcu_uart_init(115200);
+	/**
+	 * Match 0
+	 * */
+	Chip_TIMER_MatchEnableInt(LPC_TIMER2,0);		/* Habilito la Interrupcion por match 0 del TMR2 */
+	Chip_TIMER_ResetOnMatchEnable(LPC_TIMER2,0);	/* Habilito el reset on match */
+	Chip_TIMER_StopOnMatchDisable(LPC_TIMER2,0);	/* Deshabilito el Stop on match */
+	/* Configuro para que genere una
+	 * interrupcion cada 1ms */
+	Chip_TIMER_SetMatch(LPC_TIMER2,0,20000);			/* Seteo el valor para el match 0 en us */
 
-   /* Agregar la funcion de incializacion del PWM */
-   mcu_pwm_Init();
+	/* Reseteo el TMR2 */
+	Chip_TIMER_Reset(LPC_TIMER2);
+	/* Habilito el TMR2 */
+	Chip_TIMER_Enable(LPC_TIMER2);
 
-   /* Funcion de incializacion del timestamp */
-   mcu_timestamp_Init();
-
-   for (i = 0 ; i < totalLeds ; i++)
-   {
-      mcu_gpio_setDirection(ledMap[i], MCU_GPIO_DIRECTION_OUTPUT);
-   }
-
-   for (i = 0 ; i < totalSwitches ; i++)
-   {
-      mcu_gpio_setDirection(switchMap[i], MCU_GPIO_DIRECTION_INPUT);
-   }
+	/* Habilito la Interrrupcion */
+	NVIC_EnableIRQ(TIMER2_IRQn);
 }
 
-extern void board_ledToggle(board_ledId_enum id)
+/** \brief
+ *
+ *
+ */
+extern uint32_t mcu_timestamp_GetTimestamp(void)
 {
-   mcu_gpio_toggleOut(ledMap[id]);
+	return mseg;
 }
 
-extern void board_ledSet(board_ledId_enum id, board_ledState_enum state)
+/** \brief
+ *
+ *	Interrupcion por match en el TMR2
+ *	Entramos cada 1ms
+ */
+ISR(TMR2_IRQHandler)
 {
-   mcu_gpio_setOut(ledMap[id], state == BOARD_LED_STATE_ON);
+	/* Incremento el contador de mseg */
+	mseg++;
+	Chip_TIMER_ClearMatch(LPC_TIMER2, 0);
 }
-
-extern board_switchState_enum board_switchGet(board_switchId_enum id)
-{
-   return (mcu_gpio_readPin(switchMap[id])?BOARD_TEC_NON_PRESSED:
-                                           BOARD_TEC_PRESSED);
-}
-
 
 /** @} doxygen end group definition */
 /** @} doxygen end group definition */

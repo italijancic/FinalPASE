@@ -1,7 +1,5 @@
-/* Copyright 2017, Gustavo Muro
+/* Copyright 2017, Your Name <youremail@domain.com>
  * All rights reserved.
- *
- * This file is part of CIAA Firmware.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,21 +29,23 @@
  *
  */
 
-#ifndef MCU_H
-#define MCU_H
-/** \brief Header para MCU
+#ifndef TEMPLATE_FILE_H
+#define TEMPLATE_FILE_H
+/** \brief Short description of this file
  **
- ** archivo de inicilización del microcontrolador
+ ** Long description of this file
  **
  **/
 
-/** \addtogroup PASE_APP_EXAMPLE
+/** \addtogroup project
  ** @{ */
-/** \addtogroup MCU
+/** \addtogroup module
  ** @{ */
 
 /*==================[inclusions]=============================================*/
-#include "mcu_gpio.h"
+#include "chip.h"
+#include "stdint.h"
+
 /*==================[cplusplus]==============================================*/
 #ifdef __cplusplus
 extern "C" {
@@ -53,12 +53,35 @@ extern "C" {
 
 /*==================[macros]=================================================*/
 
+
 /*==================[typedef]================================================*/
 
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
-extern void mcu_init(void);
+
+/** \brief
+ **
+ **
+ **
+ ** \param[in]
+ ** \param[in]
+ ** \return..
+ **/
+extern void mcu_timestamp_Init(void);
+
+
+/** \brief
+ **
+ **
+ **
+ ** \param[in]
+ ** \param[in]
+ ** \return..
+ **/
+extern uint32_t mcu_timestamp_GetTimestamp(void);
+
+
 /*==================[cplusplus]==============================================*/
 #ifdef __cplusplus
 }
@@ -66,5 +89,5 @@ extern void mcu_init(void);
 /** @} doxygen end group definition */
 /** @} doxygen end group definition */
 /*==================[end of file]============================================*/
-#endif /* #ifndef MCU_H */
+#endif /* #ifndef TEMPLATE_FILE_H */
 

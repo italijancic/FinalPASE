@@ -48,6 +48,8 @@
 #include "pase_app_example.h"
 #include "mcu.h"
 #include "bsp.h"
+#include "stdio.h"
+
 
 /*==================[macros and definitions]=================================*/
 
@@ -61,6 +63,8 @@ enum{
 uint32_t duty=0;
 uint8_t state_sec=0;
 uint8_t flg_play = 0;
+
+int stamp = 2000;
 
 /*==================[internal functions declaration]=========================*/
 
@@ -159,7 +163,8 @@ TASK(SecuenciaTask)
 	/**
 	 * Declaracion de variables locales
 	 * */
-	static char str[40];
+	static char str[100];
+	static uint32_t timestamp;
 
 	/** \brief State Machine for led actions
 	 * Máquina de estado para generar la secuencia requerida
@@ -170,9 +175,10 @@ TASK(SecuenciaTask)
 			if(duty == 0)
 			{
 				/* Obtengo el timestamp */
+				timestamp = mcu_timestamp_GetTimestamp();
 
 				/* Imprimo msj por la UART */
-				sprintf(str,"TIMESTAMP: Encendiendo Led Rojo \n\r");
+				sprintf(str,"ts : Encendiendo Led Rojo \n\r");
 				if(progam_state != STOP_STATE)
 					mcu_uart_write(str, strlen(str));
 			}
@@ -185,6 +191,7 @@ TASK(SecuenciaTask)
 			else
 			{
 				/* Obtengo el timestamp */
+				timestamp = mcu_timestamp_GetTimestamp();
 
 				/* Imprimo msj por la UART */
 				sprintf(str,"TIMESTAMP: Intensidad Máxima Led Rojo \n\r");
@@ -314,9 +321,6 @@ TASK(UserTask)
 	int32_t key;
     static char str[40];
 
-    /* Flags de Estado */
-    //static uint8_t flg_play = 0;
-    static bool flg_pause = 0;
 
     /**
      * Obtengo la ultima tecla presionada
