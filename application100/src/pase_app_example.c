@@ -51,9 +51,17 @@
 
 /*==================[macros and definitions]=================================*/
 
+enum{
+	STOP_STATE = 0,
+	PLAY_STATE,
+	PAUSE_STATE
+}progam_state;
+
 /*==================[internal data declaration]==============================*/
 uint32_t duty=0;
 uint8_t state_sec=0;
+uint8_t flg_play = 0;
+
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
@@ -127,6 +135,8 @@ TASK(InitTask)
 
    /*Seteo el DutyCycle del PWM en 0% */
    mcu_pwm_SetDutyCycle(0);
+
+   progam_state = STOP_STATE;
 
    TerminateTask();
 }
@@ -278,10 +288,7 @@ TASK(SecuenciaTask)
 				mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
 				/*Seteo el DutyCycle del PWM en 0% */
 				mcu_pwm_SetDutyCycle(duty);
-
-				/* Imprimo msj por la UART */
-
-				/* Incremento el estado en la SM */
+				/* Reinicializo la maquina de estados */
 				state_sec = 0;
 			}
 			break;
@@ -312,7 +319,7 @@ TASK(UserTask)
     static char str[40];
 
     /* Flags de Estado */
-    static bool flg_play = 0;
+    //static uint8_t flg_play = 0;
     static bool flg_pause = 0;
 
     /**
@@ -320,93 +327,86 @@ TASK(UserTask)
      * */
     key = bsp_keyboardGet();
 
-    /* TECLA 1
-     * Da inicio y la finaliza
-     * LED RGB
-     * */
-    if (key == BOARD_TEC_ID_1)
+
+    /* Maquina de estado, para los estados del programa */
+    switch(progam_state)
     {
-    	/* Obtengo el Estado de la Tare de Secuencia de LEDs */
-    	//GetTaskState(SecuenciaTask, &state);
+    	/* Estado de stop */
+    	case STOP_STATE:
 
-    	if(cont_tec_1 == 0)
-    	{
-
-    		/* Si esta pausado */
-    		if(cont_tec_2 == 1)
+    		/* Si se preciona la tecla play/stop */
+    		if(key == BOARD_TEC_ID_1)
     		{
-    			/* Reinicializo la  maquina de estado de secuencia led */
-    			state_sec = 0;
-    			/* Modifico el el pin del PWM */
-    			duty = 0;
-    			mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
-    			mcu_pwm_SetDutyCycle(duty);
-    			cont_tec_1 = 0;
-    			/* Pongo en bajo todas las salidas*/
-    			bsp_ledAction(BOARD_LED_ID_0_R,BOARD_LED_STATE_OFF);
-    			bsp_ledAction(BOARD_LED_ID_0_G,BOARD_LED_STATE_OFF);
-    			bsp_ledAction(BOARD_LED_ID_0_B,BOARD_LED_STATE_OFF);
-    			/* Reinicializo el contador de tecla 2 */
-    			cont_tec_2 = 0;
-    			flg_play = 0;
-    		}
-    		else
-    		{
-    			flg_play = 1;
-
     			SetRelAlarm(ActivateSecuenciaTask, 0, 20);
     			/* Imprimo msj por la UART */
     			sprintf(str,"TIMESTAMP: Inicio Secuencia \n\r");
     			mcu_uart_write(str, strlen(str));
-    			/* Incremento el contador de tecla 1 */
-    			cont_tec_1 = 1;
+    			/* Cambio de estado*/
+    			progam_state = PLAY_STATE;
     		}
-    	}
-    	else
-    	{
-    		flg_play = 0;
+    		break;
 
-    		CancelAlarm(ActivateSecuenciaTask);
-    		/* Reinicializo la  maquina de estado de secuencia led */
-    		state_sec = 0;
-    		/* Modifico el el pin del PWM */
-    		duty = 0;
-    		mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
-    		mcu_pwm_SetDutyCycle(duty);
-    		cont_tec_1 = 0;
-    		/* Pongo en bajo todas las salidas*/
-    		bsp_ledAction(BOARD_LED_ID_0_R,BOARD_LED_STATE_OFF);
-    		bsp_ledAction(BOARD_LED_ID_0_G,BOARD_LED_STATE_OFF);
-    		bsp_ledAction(BOARD_LED_ID_0_B,BOARD_LED_STATE_OFF);
-    	}
-    }
+    	case PLAY_STATE:
 
-    /* TECLA 2
-     * Pausa o reinicia la secuencia de los LEDs
-     * LE RGB
-     * */
-    if (flg_play && key == BOARD_TEC_ID_2)
-    {
-    	if(cont_tec_2 == 0)
-    	{
-    		CancelAlarm(ActivateSecuenciaTask);
-    		/* Imprimo msj por la UART */
-    		sprintf(str,"TIMESTAMP: Secuencia Pausada \n\r");
-    		mcu_uart_write(str, strlen(str));
-    		/* Incremento el contador de tecla */
-    	    cont_tec_2 = 1;
-    	    /* Inicializo la tecla el contador de tecla 1*/
-    	    cont_tec_1 = 0;
-    	 }
-    	 else
-    	 {
-    		 SetRelAlarm(ActivateSecuenciaTask, 0, 20);
-    		 /* Imprimo msj por la UART */
-    		 sprintf(str,"TIMESTAMP: Secuencia Reanudada \n\r");
-    		 mcu_uart_write(str, strlen(str));
-    		 /* Reseteo el contador de tecla 2 */
-    		 cont_tec_2 = 0;
-    	}
+    		/* Si se preciona la tecla de play/stop */
+    		if(key == BOARD_TEC_ID_1)
+    		{
+    			CancelAlarm(ActivateSecuenciaTask);
+    			/* Modifico el el pin del PWM */
+  		   		duty = 0;
+        		mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
+        		mcu_pwm_SetDutyCycle(duty);
+    			/* Pongo en bajo todas las salidas*/
+    			bsp_ledAction(BOARD_LED_ID_0_R,BOARD_LED_STATE_OFF);
+    			bsp_ledAction(BOARD_LED_ID_0_G,BOARD_LED_STATE_OFF);
+    			bsp_ledAction(BOARD_LED_ID_0_B,BOARD_LED_STATE_OFF);
+    			/* Cambio de estado*/
+    			progam_state = STOP_STATE;
+    		}
+
+    		/* Si se preciona la tecla de pause/resume */
+    		if(key == BOARD_TEC_ID_2)
+    		{
+    			CancelAlarm(ActivateSecuenciaTask);
+    			/* Imprimo msj por la UART */
+    			sprintf(str,"TIMESTAMP: Secuencia Pausada \n\r");
+    			mcu_uart_write(str, strlen(str));
+    			/* Cambio de estado*/
+    			progam_state = PAUSE_STATE;
+    		}
+    		break;
+
+    	case PAUSE_STATE:
+    		/* Si se preciona la tecla de play/stop */
+    		if(key == BOARD_TEC_ID_1)
+    		{
+    			/* Modifico el el pin del PWM */
+  		   		duty = 0;
+        		mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
+        		mcu_pwm_SetDutyCycle(duty);
+    			/* Pongo en bajo todas las salidas*/
+    			bsp_ledAction(BOARD_LED_ID_0_R,BOARD_LED_STATE_OFF);
+    			bsp_ledAction(BOARD_LED_ID_0_G,BOARD_LED_STATE_OFF);
+    			bsp_ledAction(BOARD_LED_ID_0_B,BOARD_LED_STATE_OFF);
+    			/* Cambio de estado*/
+    			progam_state = STOP_STATE;
+    		}
+
+    		/* Si se preciona la tecla de pause/resume */
+    		if(key == BOARD_TEC_ID_2)
+    		{
+    			SetRelAlarm(ActivateSecuenciaTask, 0, 20);
+    			/* Imprimo msj por la UART */
+    			sprintf(str,"TIMESTAMP: Inicio Secuencia \n\r");
+    			mcu_uart_write(str, strlen(str));
+    			/* Cambio de estado*/
+    			progam_state = PLAY_STATE;
+    		}
+
+    		break;
+
+    	default:
+    		break;
     }
 
 
