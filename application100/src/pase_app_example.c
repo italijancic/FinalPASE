@@ -201,6 +201,8 @@ TASK(SecuenciaTask)
 				mcu_pwm_SetDutyCycle(duty);
 
 				/* Imprimo msj por la UART */
+				sprintf(str,"TIMESTAMP: Encendiendo Led Verde \n\r");
+				mcu_uart_write(str, strlen(str));
 
 				/* Incremento el estado en la SM */
 				state_sec = 2;
@@ -217,7 +219,8 @@ TASK(SecuenciaTask)
 			else
 			{
 				/* Imprimo msj por la UART */
-
+				sprintf(str,"TIMESTAMP: Intencidad Máxima Led Verde \n\r");
+				mcu_uart_write(str, strlen(str));
 				/* Incremento el estado en la SM */
 				state_sec = 3;
 			}
@@ -238,7 +241,8 @@ TASK(SecuenciaTask)
 				mcu_pwm_SetDutyCycle(duty);
 
 				/* Imprimo msj por la UART */
-
+				sprintf(str,"TIMESTAMP: Encendiendo Led Azul \n\r");
+				mcu_uart_write(str, strlen(str));
 				/* Incremento el estado en la SM */
 				state_sec = 4;
 			}
@@ -254,7 +258,8 @@ TASK(SecuenciaTask)
 			else
 			{
 				/* Imprimo msj por la UART */
-
+				sprintf(str,"TIMESTAMP: Intencidad Máxima Led Azul \n\r");
+				mcu_uart_write(str, strlen(str));
 				/* Incremento el estado en la SM */
 				state_sec = 5;
 			}
