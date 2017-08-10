@@ -159,8 +159,6 @@ TASK(SecuenciaTask)
 	/**
 	 * Declaracion de variables locales
 	 * */
-	//static uint32_t duty = 0;
-	static unsigned long timestamp = 0;
 	static char str[40];
 
 	/** \brief State Machine for led actions
@@ -175,7 +173,8 @@ TASK(SecuenciaTask)
 
 				/* Imprimo msj por la UART */
 				sprintf(str,"TIMESTAMP: Encendiendo Led Rojo \n\r");
-				mcu_uart_write(str, strlen(str));
+				if(progam_state != STOP_STATE)
+					mcu_uart_write(str, strlen(str));
 			}
 			if(duty < 100)
 			{
@@ -188,7 +187,7 @@ TASK(SecuenciaTask)
 				/* Obtengo el timestamp */
 
 				/* Imprimo msj por la UART */
-				sprintf(str,"TIMESTAMP: Intencidad Máxima Led Rojo \n\r");
+				sprintf(str,"TIMESTAMP: Intensidad Máxima Led Rojo \n\r");
 				mcu_uart_write(str, strlen(str));
 
 				/* Incremento el estado en la SM */
@@ -229,7 +228,7 @@ TASK(SecuenciaTask)
 			else
 			{
 				/* Imprimo msj por la UART */
-				sprintf(str,"TIMESTAMP: Intencidad Máxima Led Verde \n\r");
+				sprintf(str,"TIMESTAMP: Intensidad Máxima Led Verde \n\r");
 				mcu_uart_write(str, strlen(str));
 				/* Incremento el estado en la SM */
 				state_sec = 3;
@@ -268,7 +267,7 @@ TASK(SecuenciaTask)
 			else
 			{
 				/* Imprimo msj por la UART */
-				sprintf(str,"TIMESTAMP: Intencidad Máxima Led Azul \n\r");
+				sprintf(str,"TIMESTAMP: Intensidad Máxima Led Azul \n\r");
 				mcu_uart_write(str, strlen(str));
 				/* Incremento el estado en la SM */
 				state_sec = 5;
@@ -313,9 +312,6 @@ TASK(UserTask)
 	 * Declaracion de variables locales
 	 * */
 	int32_t key;
-	TaskStateType state;
-	static uint8_t cont_tec_1 = 0;
-	static uint8_t cont_tec_2 = 0;
     static char str[40];
 
     /* Flags de Estado */
@@ -352,6 +348,8 @@ TASK(UserTask)
     		if(key == BOARD_TEC_ID_1)
     		{
     			CancelAlarm(ActivateSecuenciaTask);
+    			/* Reinicializo la  maquina de estado de secuencia led */
+    			state_sec = 0;
     			/* Modifico el el pin del PWM */
   		   		duty = 0;
         		mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
@@ -360,6 +358,9 @@ TASK(UserTask)
     			bsp_ledAction(BOARD_LED_ID_0_R,BOARD_LED_STATE_OFF);
     			bsp_ledAction(BOARD_LED_ID_0_G,BOARD_LED_STATE_OFF);
     			bsp_ledAction(BOARD_LED_ID_0_B,BOARD_LED_STATE_OFF);
+    			/* Imprimo msj por la UART */
+    			sprintf(str,"TIMESTAMP: Secuencia Finalizada \n\r");
+    			mcu_uart_write(str, strlen(str));
     			/* Cambio de estado*/
     			progam_state = STOP_STATE;
     		}
@@ -380,6 +381,8 @@ TASK(UserTask)
     		/* Si se preciona la tecla de play/stop */
     		if(key == BOARD_TEC_ID_1)
     		{
+    			/* Reinicializo la  maquina de estado de secuencia led */
+    			state_sec = 0;
     			/* Modifico el el pin del PWM */
   		   		duty = 0;
         		mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
@@ -388,6 +391,9 @@ TASK(UserTask)
     			bsp_ledAction(BOARD_LED_ID_0_R,BOARD_LED_STATE_OFF);
     			bsp_ledAction(BOARD_LED_ID_0_G,BOARD_LED_STATE_OFF);
     			bsp_ledAction(BOARD_LED_ID_0_B,BOARD_LED_STATE_OFF);
+    			/* Imprimo msj por la UART */
+    			sprintf(str,"TIMESTAMP: Secuencia Finalizada \n\r");
+    			mcu_uart_write(str, strlen(str));
     			/* Cambio de estado*/
     			progam_state = STOP_STATE;
     		}
@@ -397,7 +403,7 @@ TASK(UserTask)
     		{
     			SetRelAlarm(ActivateSecuenciaTask, 0, 20);
     			/* Imprimo msj por la UART */
-    			sprintf(str,"TIMESTAMP: Inicio Secuencia \n\r");
+    			sprintf(str,"TIMESTAMP: Secuencia Reanudada \n\r");
     			mcu_uart_write(str, strlen(str));
     			/* Cambio de estado*/
     			progam_state = PLAY_STATE;
