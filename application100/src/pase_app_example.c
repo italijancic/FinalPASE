@@ -52,7 +52,7 @@
 /*==================[macros and definitions]=================================*/
 
 /*==================[internal data declaration]==============================*/
-int32_t duty=0;
+uint32_t duty=0;
 uint8_t state_sec=0;
 /*==================[internal functions declaration]=========================*/
 
@@ -124,6 +124,7 @@ TASK(InitTask)
 
    /*Configuro el modulo de pwm*/
    mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
+
    /*Seteo el DutyCycle del PWM en 0% */
    mcu_pwm_SetDutyCycle(0);
 
@@ -148,7 +149,7 @@ TASK(SecuenciaTask)
 	/**
 	 * Declaracion de variables locales
 	 * */
-	static uint32_t duty = 0;
+	//static uint32_t duty = 0;
 	static unsigned long timestamp = 0;
 	static char str[40];
 
@@ -162,23 +163,24 @@ TASK(SecuenciaTask)
 			{
 				/* Obtengo el timestamp */
 
-				sprintf(str,"TIMESTAMP: Encendiendo Led Rojo \n\r");
 				/* Imprimo msj por la UART */
+				sprintf(str,"TIMESTAMP: Encendiendo Led Rojo \n\r");
 				mcu_uart_write(str, strlen(str));
 			}
 			if(duty < 100)
 			{
-				duty += 1;
 				mcu_pwm_SetDutyCycle(duty);
+				duty += 1;
 			}
 			/* Llego a la máxima intensidad */
 			else
 			{
 				/* Obtengo el timestamp */
 
-				sprintf(str,"TIMESTAMP: Intencidad Máxima Led Rojo \n\r");
 				/* Imprimo msj por la UART */
+				sprintf(str,"TIMESTAMP: Intencidad Máxima Led Rojo \n\r");
 				mcu_uart_write(str, strlen(str));
+
 				/* Incremento el estado en la SM */
 				state_sec = 1;
 			}
@@ -187,8 +189,8 @@ TASK(SecuenciaTask)
 		case 1:
 			if(duty >= 1)
 			{
-				duty -= 1;
 				mcu_pwm_SetDutyCycle(duty);
+				duty -= 1;
 			}
 			/* Llego a la minima intensidad */
 			else
@@ -208,8 +210,8 @@ TASK(SecuenciaTask)
 		case 2:
 			if(duty < 100)
 			{
-				duty += 1;
 				mcu_pwm_SetDutyCycle(duty);
+				duty += 1;
 			}
 			/* Llego a la máxima intensidad */
 			else
@@ -224,8 +226,8 @@ TASK(SecuenciaTask)
 		case 3:
 			if(duty >= 1)
 			{
-				duty -= 1;
 				mcu_pwm_SetDutyCycle(duty);
+				duty -= 1;
 			}
 			/* Llego a la minima intensidad */
 			else
@@ -245,8 +247,8 @@ TASK(SecuenciaTask)
 		case 4:
 			if(duty < 100)
 			{
-				duty += 1;
 				mcu_pwm_SetDutyCycle(duty);
+				duty += 1;
 			}
 			/* Llego a la máxima intensidad */
 			else
@@ -261,8 +263,8 @@ TASK(SecuenciaTask)
 		case 5:
 			if(duty >= 1)
 			{
-				duty -= 1;
 				mcu_pwm_SetDutyCycle(duty);
+				duty -= 1;
 			}
 			/* Llego a la minima intensidad */
 			else
@@ -304,6 +306,10 @@ TASK(UserTask)
 	static uint8_t cont_tec_2 = 0;
     static char str[40];
 
+    /* Flags de Estado */
+    static bool flg_play = 0;
+    static bool flg_pause = 0;
+
     /**
      * Obtengo la ultima tecla presionada
      * */
@@ -320,29 +326,53 @@ TASK(UserTask)
 
     	if(cont_tec_1 == 0)
     	{
-    		SetRelAlarm(ActivateSecuenciaTask, 0, 20);
 
-    		/* Imprimo msj por la UART */
-    		sprintf(str,"TIMESTAMP: Inicio Secuencia \n\r");
-    		mcu_uart_write(str, strlen(str));
+    		/* Si esta pausado */
+    		if(cont_tec_2 == 1)
+    		{
+    			/* Reinicializo la  maquina de estado de secuencia led */
+    			state_sec = 0;
+    			/* Modifico el el pin del PWM */
+    			duty = 0;
+    			mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
+    			mcu_pwm_SetDutyCycle(duty);
+    			cont_tec_1 = 0;
+    			/* Pongo en bajo todas las salidas*/
+    			bsp_ledAction(BOARD_LED_ID_0_R,BOARD_LED_STATE_OFF);
+    			bsp_ledAction(BOARD_LED_ID_0_G,BOARD_LED_STATE_OFF);
+    			bsp_ledAction(BOARD_LED_ID_0_B,BOARD_LED_STATE_OFF);
+    			/* Reinicializo el contador de tecla 2 */
+    			cont_tec_2 = 0;
+    			flg_play = 0;
+    		}
+    		else
+    		{
+    			flg_play = 1;
 
-    		cont_tec_1 = 1;
+    			SetRelAlarm(ActivateSecuenciaTask, 0, 20);
+    			/* Imprimo msj por la UART */
+    			sprintf(str,"TIMESTAMP: Inicio Secuencia \n\r");
+    			mcu_uart_write(str, strlen(str));
+    			/* Incremento el contador de tecla 1 */
+    			cont_tec_1 = 1;
+    		}
     	}
     	else
     	{
+    		flg_play = 0;
+
     		CancelAlarm(ActivateSecuenciaTask);
     		/* Reinicializo la  maquina de estado de secuencia led */
     		state_sec = 0;
     		/* Modifico el el pin del PWM */
     		duty = 0;
     		mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
-    		mcu_pwm_SetDutyCycle(0);
-    		cont_tec_2 = 0;
+    		mcu_pwm_SetDutyCycle(duty);
+    		cont_tec_1 = 0;
+    		/* Pongo en bajo todas las salidas*/
     		bsp_ledAction(BOARD_LED_ID_0_R,BOARD_LED_STATE_OFF);
     		bsp_ledAction(BOARD_LED_ID_0_G,BOARD_LED_STATE_OFF);
     		bsp_ledAction(BOARD_LED_ID_0_B,BOARD_LED_STATE_OFF);
-
-
     	}
     }
 
@@ -350,24 +380,30 @@ TASK(UserTask)
      * Pausa o reinicia la secuencia de los LEDs
      * LE RGB
      * */
-    if (key == BOARD_TEC_ID_2)
+    if (flg_play && key == BOARD_TEC_ID_2)
     {
     	if(cont_tec_2 == 0)
     	{
-    		SetRelAlarm(ActivateSecuenciaTask, 0, 20);
-
+    		CancelAlarm(ActivateSecuenciaTask);
     		/* Imprimo msj por la UART */
-    	    sprintf(str,"TIMESTAMP: Inicio Secuencia \n\r");
-    	    mcu_uart_write(str, strlen(str));
-
+    		sprintf(str,"TIMESTAMP: Secuencia Pausada \n\r");
+    		mcu_uart_write(str, strlen(str));
+    		/* Incremento el contador de tecla */
     	    cont_tec_2 = 1;
+    	    /* Inicializo la tecla el contador de tecla 1*/
+    	    cont_tec_1 = 0;
     	 }
     	 else
     	 {
-    		 CancelAlarm(ActivateSecuenciaTask);
+    		 SetRelAlarm(ActivateSecuenciaTask, 0, 20);
+    		 /* Imprimo msj por la UART */
+    		 sprintf(str,"TIMESTAMP: Secuencia Reanudada \n\r");
+    		 mcu_uart_write(str, strlen(str));
+    		 /* Reseteo el contador de tecla 2 */
     		 cont_tec_2 = 0;
     	}
     }
+
 
     /* Fin tarea */
     TerminateTask();
