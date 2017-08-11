@@ -45,6 +45,7 @@
 #include "os.h"
 #include "chip.h"
 #include "stdint.h"
+#include "limits.h"
 
 
 /*==================[macros and definitions]=================================*/
@@ -52,7 +53,8 @@
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
-int mseg;
+reloj stclock;
+int prueba;
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
@@ -82,7 +84,7 @@ extern void mcu_timestamp_Init(void)
 	Chip_TIMER_StopOnMatchDisable(LPC_TIMER2,0);	/* Deshabilito el Stop on match */
 	/* Configuro para que genere una
 	 * interrupcion cada 1ms */
-	Chip_TIMER_SetMatch(LPC_TIMER2,0,20000);			/* Seteo el valor para el match 0 en us */
+	Chip_TIMER_SetMatch(LPC_TIMER2,0,1000);			/* Seteo el valor para el match 0 en us */
 
 	/* Reseteo el TMR2 */
 	Chip_TIMER_Reset(LPC_TIMER2);
@@ -97,9 +99,38 @@ extern void mcu_timestamp_Init(void)
  *
  *
  */
-extern uint32_t mcu_timestamp_GetTimestamp(void)
+extern char* mcu_timestamp_GetTimestamp(void)
 {
-	return mseg;
+	/*
+	 * Declaración de varaibles locales
+	 * */
+	static char strMseg[10];
+	static char strSeg[20];
+	static char strMin[20];
+	static char strHs[50];
+	static char strOut[150];
+	int i =0;
+
+	/* Limpio el buffer de salida */
+	for (i = 0; i < strlen(strOut);i++)
+		strOut[i] = '\0';
+
+	/* Paso los enteros a ascii*/
+	itoa(stclock.mseg,strMseg,10);
+	itoa(stclock.seg,strSeg,10);
+	itoa(stclock.min,strMin,10);
+	itoa(stclock.hs,strHs,10);
+
+	/* Concateno strings para formar el mensaje de salida */
+	strcat(strOut,strHs);
+	strcat(strOut,":");
+	strcat(strOut,strMin);
+	strcat(strOut,":");
+	strcat(strOut,strSeg);
+	strcat(strOut,":");
+	strcat(strOut,strMseg);
+
+	return (char *)strOut;
 }
 
 /** \brief
@@ -110,7 +141,30 @@ extern uint32_t mcu_timestamp_GetTimestamp(void)
 ISR(TMR2_IRQHandler)
 {
 	/* Incremento el contador de mseg */
-	mseg++;
+	stclock.mseg++;
+	/* Si paso 1seg */
+	if(stclock.mseg >= 1000)
+	{
+		stclock.mseg = 0;
+		/* Incremento el contador de segundos */
+		stclock.seg++;
+		/* Si paso un minuto */
+		if(stclock.seg >= 60)
+		{
+			stclock.seg = 0;
+			/* Incremento el contador de minutos */
+			stclock.min++;
+			/* Si paso una hora */
+			if(stclock.min >= 60)
+			{
+				stclock.min = 0;
+				stclock.hs++;
+				if(stclock.hs >= LONG_MAX)
+					stclock.hs = 0;
+			}
+		}
+	}
+
 	Chip_TIMER_ClearMatch(LPC_TIMER2, 0);
 }
 

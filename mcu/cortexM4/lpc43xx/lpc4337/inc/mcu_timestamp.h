@@ -55,7 +55,12 @@ extern "C" {
 
 
 /*==================[typedef]================================================*/
-
+typedef struct{
+	int mseg;
+	int seg;
+	int min;
+	int hs;
+}reloj;
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
@@ -79,7 +84,7 @@ extern void mcu_timestamp_Init(void);
  ** \param[in]
  ** \return..
  **/
-extern uint32_t mcu_timestamp_GetTimestamp(void);
+extern char* mcu_timestamp_GetTimestamp(void);
 
 
 /*==================[cplusplus]==============================================*/
