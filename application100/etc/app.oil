@@ -76,6 +76,18 @@ OSEK OSEK {
    	/********************************/ 
 
 	/********************************/
+	/*    TASK TimeStampTask        */
+	/********************************/ 
+   	TASK TimeStampTask {
+    	PRIORITY = 1;
+      	ACTIVATION = 1;
+      	STACK = 512;
+      	TYPE = BASIC;
+      	SCHEDULE = NON;
+   	}
+	/********************************/
+	
+	/********************************/
 	/*    TASK SecuenciaTask        */
 	/********************************/ 
    	TASK SecuenciaTask {
@@ -127,6 +139,17 @@ OSEK OSEK {
     	COUNTER = HardwareCounter;
       	ACTION = ACTIVATETASK {
         	TASK = SecuenciaTask;
+      	}
+   	}
+	/********************************/
+	
+	/********************************/
+	/* ALARM ActivateTimeStampTask  */
+	/********************************/
+   	ALARM ActivateTimeStampTask {
+    	COUNTER = HardwareCounter;
+      	ACTION = ACTIVATETASK {
+        	TASK = TimeStampTask;
       	}
    	}
 	/********************************/
