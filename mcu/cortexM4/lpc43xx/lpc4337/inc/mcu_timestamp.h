@@ -84,7 +84,7 @@ extern void mcu_timestamp_Init(void);
  ** \param[in]
  ** \return..
  **/
-extern char* mcu_timestamp_GetTimestamp(void);
+extern char* mcu_timestamp_GetTimestamp(reloj stclock);
 
 
 /*==================[cplusplus]==============================================*/

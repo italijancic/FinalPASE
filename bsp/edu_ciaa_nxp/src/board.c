@@ -96,7 +96,7 @@ extern void board_init(void)
    mcu_pwm_Init();
 
    /* Funcion de incializacion del timestamp */
-   mcu_timestamp_Init();
+   //mcu_timestamp_Init();
 
    for (i = 0 ; i < totalLeds ; i++)
    {

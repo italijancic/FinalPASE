@@ -53,8 +53,7 @@
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
-reloj stclock;
-int prueba;
+
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
@@ -67,39 +66,39 @@ int prueba;
  */
 extern void mcu_timestamp_Init(void)
 {
-	/* Inicializo el TMR1 */
-	Chip_TIMER_Init(LPC_TIMER2);
-
-	/**
-	 *  Seteo el prescaler del TIMER2
-	 *  Con esta configuracion el TIMER2 se incrementa cada 1uS
-	 *  */
-	Chip_TIMER_PrescaleSet(LPC_TIMER2,Chip_Clock_GetRate(CLK_MX_TIMER2)/1000000 - 1);
-
-	/**
-	 * Match 0
-	 * */
-	Chip_TIMER_MatchEnableInt(LPC_TIMER2,0);		/* Habilito la Interrupcion por match 0 del TMR2 */
-	Chip_TIMER_ResetOnMatchEnable(LPC_TIMER2,0);	/* Habilito el reset on match */
-	Chip_TIMER_StopOnMatchDisable(LPC_TIMER2,0);	/* Deshabilito el Stop on match */
-	/* Configuro para que genere una
-	 * interrupcion cada 1ms */
-	Chip_TIMER_SetMatch(LPC_TIMER2,0,1000);			/* Seteo el valor para el match 0 en us */
-
-	/* Reseteo el TMR2 */
-	Chip_TIMER_Reset(LPC_TIMER2);
-	/* Habilito el TMR2 */
-	Chip_TIMER_Enable(LPC_TIMER2);
-
-	/* Habilito la Interrrupcion */
-	NVIC_EnableIRQ(TIMER2_IRQn);
+//	/* Inicializo el TMR1 */
+//	Chip_TIMER_Init(LPC_TIMER2);
+//
+//	/**
+//	 *  Seteo el prescaler del TIMER2
+//	 *  Con esta configuracion el TIMER2 se incrementa cada 1uS
+//	 *  */
+//	Chip_TIMER_PrescaleSet(LPC_TIMER2,Chip_Clock_GetRate(CLK_MX_TIMER2)/1000000 - 1);
+//
+//	/**
+//	 * Match 0
+//	 * */
+//	Chip_TIMER_MatchEnableInt(LPC_TIMER2,0);		/* Habilito la Interrupcion por match 0 del TMR2 */
+//	Chip_TIMER_ResetOnMatchEnable(LPC_TIMER2,0);	/* Habilito el reset on match */
+//	Chip_TIMER_StopOnMatchDisable(LPC_TIMER2,0);	/* Deshabilito el Stop on match */
+//	/* Configuro para que genere una
+//	 * interrupcion cada 1ms */
+//	Chip_TIMER_SetMatch(LPC_TIMER2,0,1000);			/* Seteo el valor para el match 0 en us */
+//
+//	/* Reseteo el TMR2 */
+//	Chip_TIMER_Reset(LPC_TIMER2);
+//	/* Habilito el TMR2 */
+//	Chip_TIMER_Enable(LPC_TIMER2);
+//
+//	/* Habilito la Interrrupcion */
+//	NVIC_EnableIRQ(TIMER2_IRQn);
 }
 
 /** \brief
  *
  *
  */
-extern char* mcu_timestamp_GetTimestamp(void)
+extern char* mcu_timestamp_GetTimestamp(reloj stclock1)
 {
 	/*
 	 * Declaración de varaibles locales
@@ -116,10 +115,10 @@ extern char* mcu_timestamp_GetTimestamp(void)
 		strOut[i] = '\0';
 
 	/* Paso los enteros a ascii*/
-	itoa(stclock.mseg,strMseg,10);
-	itoa(stclock.seg,strSeg,10);
-	itoa(stclock.min,strMin,10);
-	itoa(stclock.hs,strHs,10);
+	itoa(stclock1.mseg,strMseg,10);
+	itoa(stclock1.seg,strSeg,10);
+	itoa(stclock1.min,strMin,10);
+	itoa(stclock1.hs,strHs,10);
 
 	/* Concateno strings para formar el mensaje de salida */
 	strcat(strOut,strHs);
@@ -140,32 +139,32 @@ extern char* mcu_timestamp_GetTimestamp(void)
  */
 ISR(TMR2_IRQHandler)
 {
-	/* Incremento el contador de mseg */
-	stclock.mseg++;
-	/* Si paso 1seg */
-	if(stclock.mseg >= 1000)
-	{
-		stclock.mseg = 0;
-		/* Incremento el contador de segundos */
-		stclock.seg++;
-		/* Si paso un minuto */
-		if(stclock.seg >= 60)
-		{
-			stclock.seg = 0;
-			/* Incremento el contador de minutos */
-			stclock.min++;
-			/* Si paso una hora */
-			if(stclock.min >= 60)
-			{
-				stclock.min = 0;
-				stclock.hs++;
-				if(stclock.hs >= LONG_MAX)
-					stclock.hs = 0;
-			}
-		}
-	}
-
-	Chip_TIMER_ClearMatch(LPC_TIMER2, 0);
+//	/* Incremento el contador de mseg */
+//	stclock.mseg++;
+//	/* Si paso 1seg */
+//	if(stclock.mseg >= 1000)
+//	{
+//		stclock.mseg = 0;
+//		/* Incremento el contador de segundos */
+//		stclock.seg++;
+//		/* Si paso un minuto */
+//		if(stclock.seg >= 60)
+//		{
+//			stclock.seg = 0;
+//			/* Incremento el contador de minutos */
+//			stclock.min++;
+//			/* Si paso una hora */
+//			if(stclock.min >= 60)
+//			{
+//				stclock.min = 0;
+//				stclock.hs++;
+//				if(stclock.hs >= LONG_MAX)
+//					stclock.hs = 0;
+//			}
+//		}
+//	}
+//
+//	Chip_TIMER_ClearMatch(LPC_TIMER2, 0);
 }
 
 /** @} doxygen end group definition */
