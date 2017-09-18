@@ -144,7 +144,7 @@ TASK(InitTask)
    SetRelAlarm(ActivateUserTask, 50, 50);
 
    /* Seteo alarma que activa el TimeStamping*/
-   SetRelAlarm(ActivateTimeStampTask, 0, 1);
+   SetRelAlarm(ActivateTimeStampTask, 1, 100);
 
    /*Configuro el modulo de pwm*/
    mcu_pwm_Config(MCU_GPIO_PIN_ID_75,2);
@@ -164,7 +164,7 @@ TASK(InitTask)
 TASK(TimeStampTask)
 {
 	/* Incremento el contador de mseg */
-	stclock.mseg++;
+	stclock.mseg = stclock.mseg + 100;
 	/* Si paso 1seg */
 	if(stclock.mseg >= 1000)
 	{
