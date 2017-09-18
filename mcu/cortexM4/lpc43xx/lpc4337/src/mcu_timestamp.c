@@ -98,7 +98,7 @@ extern void mcu_timestamp_Init(void)
  *
  *
  */
-extern char* mcu_timestamp_GetTimestamp(reloj stclock1)
+extern char* mcu1_timestamp_GetTimestamp(reloj stclock1)
 {
 	/*
 	 * Declaración de varaibles locales

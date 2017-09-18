@@ -52,6 +52,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include "limits.h"
+
 /*==================[macros and definitions]=================================*/
 
 enum{
@@ -76,12 +77,59 @@ typedef struct{
 
 reloj stclock;
 /*==================[internal functions declaration]=========================*/
+/** \brief
+ **
+ **
+ **
+ ** \param[in]
+ ** \param[in]
+ ** \return..
+ **/
+extern char* GetTimestamp(reloj stclock1);
 
 /*==================[internal data definition]===============================*/
 
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
+
+/** \brief
+ *
+ *
+ */
+extern char* GetTimestamp(reloj stclock1)
+{
+	/*
+	 * Declaración de varaibles locales
+	 * */
+	static char strMseg[10];
+	static char strSeg[20];
+	static char strMin[20];
+	static char strHs[50];
+	static char strOut[150];
+	int i =0;
+
+	/* Limpio el buffer de salida */
+	for (i = 0; i < strlen(strOut);i++)
+		strOut[i] = '\0';
+
+	/* Paso los enteros a ascii*/
+	itoa(stclock1.mseg,strMseg,10);
+	itoa(stclock1.seg,strSeg,10);
+	itoa(stclock1.min,strMin,10);
+	itoa(stclock1.hs,strHs,10);
+
+	/* Concateno strings para formar el mensaje de salida */
+	strcat(strOut,strHs);
+	strcat(strOut,":");
+	strcat(strOut,strMin);
+	strcat(strOut,":");
+	strcat(strOut,strSeg);
+	strcat(strOut,":");
+	strcat(strOut,strMseg);
+
+	return (char *)strOut;
+}
 
 /*==================[external functions definition]==========================*/
 
@@ -206,7 +254,7 @@ TASK(SecuenciaTask)
 			if(duty == 0)
 			{
 				/* Obtengo el timestamp */
-				str_timestamp = mcu_timestamp_GetTimestamp(stclock);
+				str_timestamp = GetTimestamp(stclock);
 
 				/* Imprimo msj por la UART */
 				sprintf(str,": Encendiendo Led Rojo \n\r");
@@ -223,7 +271,7 @@ TASK(SecuenciaTask)
 			else
 			{
 				/* Obtengo el timestamp */
-				str_timestamp = mcu_timestamp_GetTimestamp(stclock);
+				str_timestamp = GetTimestamp(stclock);
 
 				/* Imprimo msj por la UART */
 				sprintf(str,": Intensidad Máxima Led Rojo \n\r");
@@ -250,7 +298,7 @@ TASK(SecuenciaTask)
 				mcu_pwm_SetDutyCycle(duty);
 
 				/* Obtengo el timestamp */
-				str_timestamp = mcu_timestamp_GetTimestamp(stclock);
+				str_timestamp = GetTimestamp(stclock);
 				/* Imprimo msj por la UART */
 				sprintf(str,": Encendiendo Led Verde \n\r");
 				strcat(str_timestamp ,str);
@@ -271,7 +319,7 @@ TASK(SecuenciaTask)
 			else
 			{
 				/* Obtengo el timestamp */
-				str_timestamp = mcu_timestamp_GetTimestamp(stclock);
+				str_timestamp = GetTimestamp(stclock);
 				/* Imprimo msj por la UART */
 				sprintf(str,": Intensidad Máxima Led Verde \n\r");
 				strcat(str_timestamp ,str);
@@ -296,7 +344,7 @@ TASK(SecuenciaTask)
 				mcu_pwm_SetDutyCycle(duty);
 
 				/* Obtengo el timestamp */
-				str_timestamp = mcu_timestamp_GetTimestamp(stclock);
+				str_timestamp = GetTimestamp(stclock);
 				/* Imprimo msj por la UART */
 				sprintf(str,": Encendiendo Led Azul \n\r");
 				strcat(str_timestamp ,str);
@@ -316,7 +364,7 @@ TASK(SecuenciaTask)
 			else
 			{
 				/* Obtengo el timestamp */
-				str_timestamp = mcu_timestamp_GetTimestamp(stclock);
+				str_timestamp = GetTimestamp(stclock);
 				/* Imprimo msj por la UART */
 				sprintf(str,": Intensidad Máxima Led Azul \n\r");
 				strcat(str_timestamp ,str);
@@ -380,7 +428,7 @@ TASK(UserTask)
     		{
     			SetRelAlarm(ActivateSecuenciaTask, 0, 20);
     			/* Obtengo el timestamp */
-    			str_timestamp = mcu_timestamp_GetTimestamp(stclock);
+    			str_timestamp = GetTimestamp(stclock);
     			/* Imprimo msj por la UART */
     			sprintf(str,": Inicio Secuencia \n\r");
     			strcat(str_timestamp ,str);
@@ -407,7 +455,7 @@ TASK(UserTask)
     			bsp_ledAction(BOARD_LED_ID_0_G,BOARD_LED_STATE_OFF);
     			bsp_ledAction(BOARD_LED_ID_0_B,BOARD_LED_STATE_OFF);
     			/* Obtengo el timestamp */
-    			str_timestamp = mcu_timestamp_GetTimestamp(stclock);
+    			str_timestamp = GetTimestamp(stclock);
     			/* Imprimo msj por la UART */
     			sprintf(str,": Secuencia Finalizada \n\r");
     			strcat(str_timestamp ,str);
@@ -421,7 +469,7 @@ TASK(UserTask)
     		{
     			CancelAlarm(ActivateSecuenciaTask);
     			/* Obtengo el timestamp */
-    			str_timestamp = mcu_timestamp_GetTimestamp(stclock);
+    			str_timestamp = GetTimestamp(stclock);
     			/* Imprimo msj por la UART */
     			sprintf(str,": Secuencia Pausada \n\r");
     			strcat(str_timestamp ,str);
@@ -446,7 +494,7 @@ TASK(UserTask)
     			bsp_ledAction(BOARD_LED_ID_0_G,BOARD_LED_STATE_OFF);
     			bsp_ledAction(BOARD_LED_ID_0_B,BOARD_LED_STATE_OFF);
     			/* Obtengo el timestamp */
-    			str_timestamp = mcu_timestamp_GetTimestamp(stclock);
+    			str_timestamp = GetTimestamp(stclock);
     			/* Imprimo msj por la UART */
     			sprintf(str,": Secuencia Finalizada \n\r");
     			strcat(str_timestamp ,str);
@@ -460,7 +508,7 @@ TASK(UserTask)
     		{
     			SetRelAlarm(ActivateSecuenciaTask, 0, 20);
     			/* Obtengo el timestamp */
-    			str_timestamp = mcu_timestamp_GetTimestamp(stclock);
+    			str_timestamp = GetTimestamp(stclock);
     			/* Imprimo msj por la UART */
     			sprintf(str,": Secuencia Reanudada \n\r");
     			strcat(str_timestamp ,str);
